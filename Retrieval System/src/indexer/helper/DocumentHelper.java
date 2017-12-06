@@ -31,14 +31,14 @@ import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
-import indexer.model.DocTokenInfoModel;
-import indexer.model.DocTokenModel;
-import indexer.model.DocumentFrequencyModel;
-import indexer.model.DocumentIdMapperModel;
-import indexer.model.DocumentModel;
-import indexer.model.IndexModel;
-import indexer.model.TermFrequencyModel;
-import indexer.model.TermIndexModel;
+import system.model.DocTokenInfoModel;
+import system.model.DocTokenModel;
+import system.model.DocumentFrequencyModel;
+import system.model.DocumentIdMapperModel;
+import system.model.DocumentModel;
+import system.model.IndexModel;
+import system.model.TermFrequencyModel;
+import system.model.TermIndexModel;
 
 public class DocumentHelper {
 

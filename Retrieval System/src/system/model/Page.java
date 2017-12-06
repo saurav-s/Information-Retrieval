@@ -1,4 +1,4 @@
-package indexer.model;
+package system.model;
 import java.util.Set;
 
 public class Page implements Comparable<Page>{

@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import retrieval.helper.RetrievalHelper;
-import retrieval.model.QueryModel;
-import retrieval.model.QueryResultModel;
 import retrieval.service.Bm25RetrievalService;
 import retrieval.service.RetrievalService;
+import system.model.QueryModel;
+import system.model.QueryResultModel;
 
 public class RetrievalController {
 	public static void main(String[] args) throws Exception {

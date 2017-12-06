@@ -1,4 +1,4 @@
-package retrieval.model;
+package system.model;
 
 public class QueryModel {
 	private String query;

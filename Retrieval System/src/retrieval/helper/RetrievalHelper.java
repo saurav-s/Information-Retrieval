@@ -28,12 +28,12 @@ import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
-import retrieval.model.DocumentIdMapperModel;
-import retrieval.model.DocumentRankModel;
-import retrieval.model.IndexModel;
-import retrieval.model.QueryModel;
-import retrieval.model.QueryResultModel;
-import retrieval.model.TermIndexModel;
+import system.model.DocumentIdMapperModel;
+import system.model.DocumentRankModel;
+import system.model.IndexModel;
+import system.model.QueryModel;
+import system.model.QueryResultModel;
+import system.model.TermIndexModel;
 
 public class RetrievalHelper {
 

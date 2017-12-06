@@ -1,4 +1,4 @@
-package retrieval.model;
+package system.model;
 
 import java.util.List;
 

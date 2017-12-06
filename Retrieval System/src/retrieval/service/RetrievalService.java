@@ -25,9 +25,9 @@ import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.FSDirectory;
 
 import retrieval.helper.RetrievalHelper;
-import retrieval.model.DocumentRankModel;
-import retrieval.model.QueryModel;
-import retrieval.model.QueryResultModel;
+import system.model.DocumentRankModel;
+import system.model.QueryModel;
+import system.model.QueryResultModel;
 
 public class RetrievalService {
 	// private static Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_47);

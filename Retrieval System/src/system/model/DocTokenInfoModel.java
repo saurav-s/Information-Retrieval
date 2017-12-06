@@ -1,4 +1,4 @@
-package indexer.model;
+package system.model;
 /**
  * 
  * This class stores information about the token type and total number of tokens in a document
