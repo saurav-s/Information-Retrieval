@@ -1,4 +1,4 @@
-package indexer.model;
+package retrieval.model;
 
 import java.util.List;
 

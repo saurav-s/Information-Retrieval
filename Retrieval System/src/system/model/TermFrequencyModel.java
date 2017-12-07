@@ -1,4 +1,4 @@
-package indexer.model;
+package system.model;
 
 public class TermFrequencyModel implements Comparable<TermFrequencyModel> {
 	
