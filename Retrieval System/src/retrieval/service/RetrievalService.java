@@ -1,201 +1,22 @@
+/*
+ * This RetrievalService is an object of any class that implements 
+ * the interface RetrievalService defined below.
+ * 
+ * A RetrievalService depicts a type of mathematical retrieval model.
+ * 
+ * A RetrievalService must fetch K top documents relevant to the given 
+ * query.
+ */
+
 package retrieval.service;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.SimpleAnalyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopScoreDocCollector;
-import org.apache.lucene.store.FSDirectory;
-
-import retrieval.helper.RetrievalHelper;
-import system.model.DocumentRankModel;
 import system.model.QueryModel;
 import system.model.QueryResultModel;
 
-public class RetrievalService {
-	// private static Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_47);
-	private static Analyzer sAnalyzer = new SimpleAnalyzer();
-
-	private IndexWriter writer;
-	private ArrayList<File> queue = new ArrayList<File>();
-	private RetrievalHelper helper;
-
-	/**
-	 * Constructor
-	 * 
-	 * @param indexDir
-	 *            the name of the folder in which the index should be created
-	 * @throws java.io.IOException
-	 *             when exception creating index.
-	 */
-	private RetrievalService(String indexDir,String corpusDir, String indexFileLocation ) throws IOException {
-		
-		FSDirectory dir = FSDirectory.open(Paths.get(indexDir));
-
-		IndexWriterConfig config = new IndexWriterConfig(sAnalyzer);
-
-		writer = new IndexWriter(dir, config);
-		
-		helper = new RetrievalHelper(corpusDir,indexFileLocation); 
-		
-	}
+public interface RetrievalService {
 	
-	public static RetrievalService getRetrievalService(String indexDir,String corpusDir, String indexFileLocation) throws IOException {
-		return new RetrievalService(indexDir,corpusDir, indexFileLocation);
-	}
-	
-
-	/**
-	 * Indexes a file or directory
-	 * 
-	 * @param fileName
-	 *            the name of a text file or a folder we wish to add to the index
-	 * @throws java.io.IOException
-	 *             when exception
-	 */
-	public void indexFileOrDirectory(String fileName) throws IOException {
-		// ===================================================
-		// gets the list of files in a folder (if user has submitted
-		// the name of a folder) or gets a single file name (is user
-		// has submitted only the file name)
-		// ===================================================
-		addFiles(new File(fileName));
-
-		int originalNumDocs = writer.numDocs();
-		for (File f : queue) {
-			FileReader fr = null;
-			try {
-				Document doc = new Document();
-
-				// ===================================================
-				// add contents of file
-				// ===================================================
-				fr = new FileReader(f);
-				doc.add(new TextField("contents", fr));
-				doc.add(new StringField("path", f.getPath(), Field.Store.YES));
-				doc.add(new StringField("filename", f.getName(), Field.Store.YES));
-
-				writer.addDocument(doc);
-				System.out.println("Added: " + f);
-			} catch (Exception e) {
-				System.out.println("Could not add: " + f);
-			} finally {
-				fr.close();
-			}
-		}
-
-		int newNumDocs = writer.numDocs();
-		System.out.println("");
-		System.out.println("************************");
-		System.out.println((newNumDocs - originalNumDocs) + " documents added.");
-		System.out.println("************************");
-
-		queue.clear();
-	}
-
-	private void addFiles(File file) {
-
-		if (!file.exists()) {
-			System.out.println(file + " does not exist.");
-		}
-		if (file.isDirectory()) {
-			for (File f : file.listFiles()) {
-				addFiles(f);
-			}
-		} else {
-			String filename = file.getName().toLowerCase();
-			// ===================================================
-			// Only index text files
-			// ===================================================
-			if (filename.endsWith(".htm") || filename.endsWith(".html") || filename.endsWith(".xml")
-					|| filename.endsWith(".txt")) {
-				queue.add(file);
-			} else {
-				System.out.println("Skipped " + filename);
-			}
-		}
-	}
-
-	/**
-	 * Close the index.
-	 * 
-	 * @throws java.io.IOException
-	 *             when exception closing
-	 */
-	public void closeIndex() throws IOException {
-		if (writer != null)
-			writer.close();
-	}
-
-	public ScoreDoc[] getDocumentScores(QueryModel query, int resultsSize, IndexSearcher searcher)
-			throws ParseException, IOException, org.apache.lucene.queryparser.classic.ParseException {
-		TopScoreDocCollector collector = TopScoreDocCollector.create(resultsSize);
-		org.apache.lucene.search.Query q = new QueryParser("contents", sAnalyzer)
-				.parse(query.getQuery());
-		searcher.search(q, collector);
-		ScoreDoc[] hits = collector.topDocs().scoreDocs;
-		return hits;
-	}
-
-	public QueryResultModel search(QueryModel query, String indexLocation, int resultSize)
-			throws IOException, ParseException, org.apache.lucene.queryparser.classic.ParseException {
-		IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexLocation)));
-		IndexSearcher searcher = new IndexSearcher(reader);
-		ScoreDoc[] hits = getDocumentScores(query, resultSize, searcher);
-		QueryResultModel queryResults = createQueryResultsfromScoredDocs(hits, searcher, query);
-		return queryResults;
-	}
-
-	public QueryResultModel createQueryResultsfromScoredDocs(ScoreDoc[] hits, IndexSearcher searcher,
-			QueryModel query) throws IOException {
-		QueryResultModel resultModel = new QueryResultModel();
-		List<DocumentRankModel> results = new ArrayList<>();
-		System.out.println("Found " + hits.length + " hits.");
-		for (ScoreDoc scoredDoc : hits) {
-			int docId = scoredDoc.doc;
-			Document d = searcher.doc(docId);
-			DocumentRankModel result = new DocumentRankModel();
-			result.setDocId(helper.getDocId(d.get("filename")));
-			result.setRankScore(scoredDoc.score);
-			results.add(result);
-		}
-		resultModel.setQueryId(query.getId());
-		resultModel.setResults(results);
-		return resultModel;
-	}
-
-	public void indexFiles(String indexLocation, String corpusLocation) {
-		try {
-			// try to add file into the index
-			this.indexFileOrDirectory(corpusLocation);
-			// ===================================================
-			// after adding, we always have to call the
-			// closeIndex, otherwise the index is not created
-			// ===================================================
-			this.closeIndex();
-		} catch (Exception ex) {
-			System.out.println("Cannot create index..." + ex.getMessage());
-			System.exit(-1);
-		} 
-	}
-	
-	
-
+	// GIVEN: a query that has an id assosciated with it, the query itself 
+	//        and the needed number of top documents
+	// RETURNS: a QueryResultModel that has atleast K top documents. 
+	QueryResultModel getQueryResults(QueryModel query, int size);
 }

@@ -13,7 +13,7 @@ import system.model.IndexModel;
 import system.model.QueryModel;
 import system.model.QueryResultModel;
 
-public class Bm25RetrievalService {
+public class Bm25RetrievalServiceImpl {
 
 	private RetrievalHelper helper;
 
@@ -21,7 +21,7 @@ public class Bm25RetrievalService {
 	 * @param corpusLocation
 	 *            :corpusLocation
 	 */
-	public Bm25RetrievalService(String corpusLocation, String indexFileLocation) {
+	public Bm25RetrievalServiceImpl(String corpusLocation, String indexFileLocation) {
 		helper = new RetrievalHelper(corpusLocation, indexFileLocation);
 	}
 
