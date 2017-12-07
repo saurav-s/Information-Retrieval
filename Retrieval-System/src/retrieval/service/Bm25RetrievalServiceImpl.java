@@ -40,7 +40,7 @@ public class Bm25RetrievalServiceImpl {
 	 * 
 	 * 
 	 * ((k2 + 1)q) / ((k2 + q)) * ((k1 + 1) f) / ((K + f)) * log( (r + 0.5) (N
-	 * − n − R + r + 0.5) ) / ((n − r + 0.5)(R − r + 0.5))
+	 * âˆ’ n âˆ’ R + r + 0.5) ) / ((n âˆ’ r + 0.5)(R âˆ’ r + 0.5))
 	 * 
 	 */
 

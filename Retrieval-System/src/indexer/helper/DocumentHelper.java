@@ -144,7 +144,7 @@ public class DocumentHelper {
 		StringTokenizer tokenizer =new StringTokenizer(documentText , " ");
 		while(tokenizer.hasMoreTokens()) {
 			String nextToken = tokenizer.nextToken();
-			if(nextToken != "CACM") {
+			if(!nextToken.equalsIgnoreCase("CACM")) {
 				sb.append(nextToken+" ");
 			}else {
 				break;
@@ -160,6 +160,7 @@ public class DocumentHelper {
 		if(parseRelevantTextOnly) {
 			whiteSpaceCleanedDocument = getRelevantText(whiteSpaceCleanedDocument);
 		}
+		System.out.println("\n\nDoctext = \t"+whiteSpaceCleanedDocument);
 		return whiteSpaceCleanedDocument;
 
 	}
