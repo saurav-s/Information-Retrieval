@@ -1,4 +1,4 @@
-package indexer.model;
+package system.model;
 
 import org.jsoup.nodes.Document;
 
