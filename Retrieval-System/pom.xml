@@ -4,7 +4,7 @@
 	<groupId>com.insane.huskies</groupId>
 	<artifactId>com.retrieval.system</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Retrieval System</name>
+	<name>Retrieval-System</name>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<resources>
