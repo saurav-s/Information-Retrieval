@@ -15,14 +15,13 @@ import system.model.QueryResultModel;
 
 public class Bm25RetrievalServiceImpl {
 
-	private RetrievalHelper helper;
 
 	/**
 	 * @param corpusLocation
 	 *            :corpusLocation
 	 */
 	public Bm25RetrievalServiceImpl(String corpusLocation, String indexFileLocation) {
-		helper = new RetrievalHelper(corpusLocation, indexFileLocation);
+		RetrievalHelper.initHelper(corpusLocation, indexFileLocation);
 	}
 
 	// k1, k2 are constants,
@@ -62,8 +61,8 @@ public class Bm25RetrievalServiceImpl {
 		double f = getTermFreqInDoc(term, docId);
 		double K = computeK(k1, b, docId);
 
-		double N = helper.getCollectionSize();
-		double n = helper.getInvetedIndex(term).size();
+		double N = RetrievalHelper.getCollectionSize();
+		double n = RetrievalHelper.getInvetedIndex(term).size();
 
 		////// !!!!!!!!!!!..............................check for double
 
@@ -71,8 +70,8 @@ public class Bm25RetrievalServiceImpl {
 		double res2 = ((k1 + 1) * f) / (K + f);
 		double resLog = ((r + 0.5) * (N - n - R + r + 0.5)) / ((n - r + 0.5) * (R - r + 0.5));
 		double result = (Math.log(resLog) * res1 * res2);
-		System.out.println("term: " + term + "\ttf :" + f + "\tterm occurance in no of collection docs:" + n
-				+ "\tdocId : " + docId + "\tScore : " + result);
+//		System.out.println("term: " + term + "\ttf :" + f + "\tterm occurance in no of collection docs:" + n
+//				+ "\tdocId : " + docId + "\tScore : " + result);
 		return result;
 	}
 
@@ -87,7 +86,7 @@ public class Bm25RetrievalServiceImpl {
 
 	private double getTermFreqInDoc(String term, int docId) {
 		int tf = 0;
-		List<IndexModel> invetedIndex = helper.getInvetedIndex(term);
+		List<IndexModel> invetedIndex = RetrievalHelper.getInvetedIndex(term);
 		for (IndexModel model : invetedIndex) {
 			if (model.getDocId() == docId) {
 				tf = model.getTf();
@@ -101,9 +100,9 @@ public class Bm25RetrievalServiceImpl {
 	 * 
 	 */
 	private double computeK(double k1, double b, int docId) {
-		double dl = (double) helper.getDocLenth(docId);
-		System.out.println("docId"+docId+"length = "+dl);
-		double avdl = helper.getAvgDocLength();
+		double dl = (double) RetrievalHelper.getDocLenth(docId);
+		//System.out.println("docId= "+docId+"\tlength = "+dl);
+		double avdl = RetrievalHelper.getAvgDocLength();
 		return (k1 * ((1 - b) + (b * dl / avdl)));
 	}
 
@@ -113,7 +112,7 @@ public class Bm25RetrievalServiceImpl {
 		List<IndexModel> relevantIndexList = new ArrayList<>();
 
 		for (String term : searchTerms) {
-			List<IndexModel> invetedIndex = helper.getInvetedIndex(term);
+			List<IndexModel> invetedIndex = RetrievalHelper.getInvetedIndex(term);
 			relevantIndexList.addAll(invetedIndex);
 			//int totalTf = totalTf(invetedIndex);
 		}

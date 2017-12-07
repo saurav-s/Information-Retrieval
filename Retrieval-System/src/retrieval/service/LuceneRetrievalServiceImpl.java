@@ -35,7 +35,6 @@ public class LuceneRetrievalServiceImpl {
 
 	private IndexWriter writer;
 	private ArrayList<File> queue = new ArrayList<File>();
-	private RetrievalHelper helper;
 
 	/**
 	 * Constructor
@@ -53,7 +52,7 @@ public class LuceneRetrievalServiceImpl {
 
 		writer = new IndexWriter(dir, config);
 		
-		helper = new RetrievalHelper(corpusDir,indexFileLocation); 
+		RetrievalHelper.initHelper(corpusDir,indexFileLocation); 
 		
 	}
 	
@@ -172,7 +171,7 @@ public class LuceneRetrievalServiceImpl {
 			int docId = scoredDoc.doc;
 			Document d = searcher.doc(docId);
 			DocumentRankModel result = new DocumentRankModel();
-			result.setDocId(helper.getDocId(d.get("filename")));
+			result.setDocId(RetrievalHelper.getDocId(d.get("filename")));
 			result.setRankScore(scoredDoc.score);
 			results.add(result);
 		}
