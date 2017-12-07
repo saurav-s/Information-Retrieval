@@ -1,6 +1,7 @@
 package retrieval.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -24,6 +25,7 @@ public class TermWeightIdfServiceImpl implements RetrievalService {
 			drm.setRankScore(fetchTfIdfProduct(queryWords, indexModel));
 			drmList.add(drm);
 		}
+		Collections.sort(drmList);
 		qr.setQueryId(query.getId());
 		qr.setResults(drmList);
 		return qr;
