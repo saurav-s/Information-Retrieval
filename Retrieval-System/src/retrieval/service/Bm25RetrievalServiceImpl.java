@@ -62,7 +62,8 @@ public class Bm25RetrievalServiceImpl {
 		double K = computeK(k1, b, docId);
 
 		double N = RetrievalHelper.getCollectionSize();
-		double n = RetrievalHelper.getInvetedIndex(term).size();
+		List<IndexModel> invetedIndex = RetrievalHelper.getInvetedIndex(term) ;
+		double n = invetedIndex == null ? 0 : invetedIndex.size();
 
 		////// !!!!!!!!!!!..............................check for double
 
@@ -87,9 +88,11 @@ public class Bm25RetrievalServiceImpl {
 	private double getTermFreqInDoc(String term, int docId) {
 		int tf = 0;
 		List<IndexModel> invetedIndex = RetrievalHelper.getInvetedIndex(term);
-		for (IndexModel model : invetedIndex) {
-			if (model.getDocId() == docId) {
-				tf = model.getTf();
+		if(invetedIndex != null) {
+			for (IndexModel model : invetedIndex) {
+				if (model.getDocId() == docId) {
+					tf = model.getTf();
+				}
 			}
 		}
 		return tf;
@@ -113,7 +116,9 @@ public class Bm25RetrievalServiceImpl {
 
 		for (String term : searchTerms) {
 			List<IndexModel> invetedIndex = RetrievalHelper.getInvetedIndex(term);
-			relevantIndexList.addAll(invetedIndex);
+			if(invetedIndex != null) {
+				relevantIndexList.addAll(invetedIndex);
+			}
 			//int totalTf = totalTf(invetedIndex);
 		}
 		List<DocumentRankModel> bm25ScoreList = computeBm25ForRelevantDocs(relevantIndexList, searchTerms);
