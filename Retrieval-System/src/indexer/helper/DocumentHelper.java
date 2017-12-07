@@ -66,7 +66,7 @@ public class DocumentHelper {
 			File f = new File(fileLocation + filename + ".txt");
 			// LOGGER.info("writing to file " + filename + " at location" +
 			// f.getAbsoluteFile());
-			FileUtils.writeStringToFile(f , doc, "UTF-8");
+			FileUtils.writeStringToFile(f, doc, "UTF-8");
 			return true;
 		} catch (IOException e) {
 			LOGGER.warning(e.getMessage());
@@ -103,7 +103,7 @@ public class DocumentHelper {
 			for (Path entry : stream) {
 				File file = entry.toFile();
 				String fileExtension = getFileExtension(file);
-				String fileName =getFileName(file);
+				String fileName = getFileName(file);
 				if (file.isFile() && ((fileExtension.equals("html")) || (fileExtension.equals("txt")))) {
 					String parsedDoc = parse(getDocument(entry.toAbsolutePath().toString(), baseUrl), parsePunctuation,
 							parseCaseFolding);
@@ -127,7 +127,7 @@ public class DocumentHelper {
 		try {
 			// System.out.println("extension =" + name.substring(name.lastIndexOf(".") +
 			// 1));
-			//return name.substring(name.lastIndexOf(".") + 1);
+			// return name.substring(name.lastIndexOf(".") + 1);
 			return name.substring(0, name.lastIndexOf("."));
 		} catch (Exception e) {
 			return "";
@@ -138,15 +138,15 @@ public class DocumentHelper {
 			boolean parseCaseFoling) {
 		return createCorpus(documentLocation, corpusLocation, "", parsePunctuation, parseCaseFoling);
 	}
-	
+
 	public static String getRelevantText(String documentText) {
-		StringBuilder sb =new StringBuilder();
-		StringTokenizer tokenizer =new StringTokenizer(documentText , " ");
-		while(tokenizer.hasMoreTokens()) {
+		StringBuilder sb = new StringBuilder();
+		StringTokenizer tokenizer = new StringTokenizer(documentText, " ");
+		while (tokenizer.hasMoreTokens()) {
 			String nextToken = tokenizer.nextToken();
-			if(!nextToken.equalsIgnoreCase("CACM")) {
-				sb.append(nextToken+" ");
-			}else {
+			if (!nextToken.equalsIgnoreCase("CACM")) {
+				sb.append(nextToken + " ");
+			} else {
 				break;
 			}
 		}
@@ -157,10 +157,10 @@ public class DocumentHelper {
 		String documentText = doc.select(TAGS_TO_BE_PARSED).text();
 		Matcher documentMatcher = SPACE_PATTERN.matcher(documentText);
 		String whiteSpaceCleanedDocument = documentMatcher.replaceAll(" ");
-		if(parseRelevantTextOnly) {
+		if (parseRelevantTextOnly) {
 			whiteSpaceCleanedDocument = getRelevantText(whiteSpaceCleanedDocument);
 		}
-		System.out.println("\n\nDoctext = \t"+whiteSpaceCleanedDocument);
+		System.out.println("\n\nDoctext = \t" + whiteSpaceCleanedDocument);
 		return whiteSpaceCleanedDocument;
 
 	}

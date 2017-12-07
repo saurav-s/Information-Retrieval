@@ -18,10 +18,10 @@ public class IndexController {
 
 	public static void main(String args[]) {
 		try {
-			
+
 			initArgs(args);
 			DocumentHelper helper = new DocumentHelper();
-			LOGGER.info("Selected task type is : "+taskType);
+			LOGGER.info("Selected task type is : " + taskType);
 			switch (taskType) {
 			case "task1":
 				helper.createCorpus(documentLocation, corpusLocation, parsePunctuation, parseCaseFolding);
@@ -59,19 +59,19 @@ public class IndexController {
 		}
 		if (args.length >= 2) {
 			taskType = args[1];
-			LOGGER.info("task type is set to:"+taskType);
+			LOGGER.info("task type is set to:" + taskType);
 		}
 		if (args.length >= 3) {
 			parsePunctuation = Boolean.parseBoolean(args[2]);
-			LOGGER.info("Punctuation handling is set to:"+parsePunctuation);
+			LOGGER.info("Punctuation handling is set to:" + parsePunctuation);
 		}
 		if (args.length >= 4) {
 			parseCaseFolding = Boolean.parseBoolean(args[3]);
-			LOGGER.info("Case folding is set to:"+parseCaseFolding);
+			LOGGER.info("Case folding is set to:" + parseCaseFolding);
 		}
 		if (args.length >= 5) {
-			corpusLocation = args[4]+"/";
-			LOGGER.info("Corpus location is set to:"+corpusLocation);
+			corpusLocation = args[4] + "/";
+			LOGGER.info("Corpus location is set to:" + corpusLocation);
 			if (documentLocation.equals(corpusLocation)) {
 				throw new IllegalArgumentException("Document and corpus directory can not be same.");
 			}

@@ -44,22 +44,22 @@ public class LuceneRetrievalServiceImpl {
 	 * @throws java.io.IOException
 	 *             when exception creating index.
 	 */
-	private LuceneRetrievalServiceImpl(String indexDir,String corpusDir, String indexFileLocation ) throws IOException {
-		
+	private LuceneRetrievalServiceImpl(String indexDir, String corpusDir, String indexFileLocation) throws IOException {
+
 		FSDirectory dir = FSDirectory.open(Paths.get(indexDir));
 
 		IndexWriterConfig config = new IndexWriterConfig(sAnalyzer);
 
 		writer = new IndexWriter(dir, config);
-		
-		RetrievalHelper.initHelper(corpusDir,indexFileLocation); 
-		
+
+		RetrievalHelper.initHelper(corpusDir, indexFileLocation);
+
 	}
-	
-	public static LuceneRetrievalServiceImpl getRetrievalService(String indexDir,String corpusDir, String indexFileLocation) throws IOException {
-		return new LuceneRetrievalServiceImpl(indexDir,corpusDir, indexFileLocation);
+
+	public static LuceneRetrievalServiceImpl getRetrievalService(String indexDir, String corpusDir,
+			String indexFileLocation) throws IOException {
+		return new LuceneRetrievalServiceImpl(indexDir, corpusDir, indexFileLocation);
 	}
-	
 
 	/**
 	 * Indexes a file or directory
@@ -146,8 +146,7 @@ public class LuceneRetrievalServiceImpl {
 	public ScoreDoc[] getDocumentScores(QueryModel query, int resultsSize, IndexSearcher searcher)
 			throws ParseException, IOException, org.apache.lucene.queryparser.classic.ParseException {
 		TopScoreDocCollector collector = TopScoreDocCollector.create(resultsSize);
-		org.apache.lucene.search.Query q = new QueryParser("contents", sAnalyzer)
-				.parse(query.getQuery());
+		org.apache.lucene.search.Query q = new QueryParser("contents", sAnalyzer).parse(query.getQuery());
 		searcher.search(q, collector);
 		ScoreDoc[] hits = collector.topDocs().scoreDocs;
 		return hits;
@@ -162,8 +161,8 @@ public class LuceneRetrievalServiceImpl {
 		return queryResults;
 	}
 
-	public QueryResultModel createQueryResultsfromScoredDocs(ScoreDoc[] hits, IndexSearcher searcher,
-			QueryModel query) throws IOException {
+	public QueryResultModel createQueryResultsfromScoredDocs(ScoreDoc[] hits, IndexSearcher searcher, QueryModel query)
+			throws IOException {
 		QueryResultModel resultModel = new QueryResultModel();
 		List<DocumentRankModel> results = new ArrayList<>();
 		System.out.println("Found " + hits.length + " hits.");
@@ -192,9 +191,7 @@ public class LuceneRetrievalServiceImpl {
 		} catch (Exception ex) {
 			System.out.println("Cannot create index..." + ex.getMessage());
 			System.exit(-1);
-		} 
+		}
 	}
-	
-	
 
 }

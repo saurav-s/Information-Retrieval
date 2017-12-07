@@ -19,8 +19,7 @@ public class Bm25RetrievalServiceImpl {
 	 * @param corpusLocation
 	 *            :corpusLocation
 	 */
-	public Bm25RetrievalServiceImpl(String corpusLocation,
-			String indexFileLocation) {
+	public Bm25RetrievalServiceImpl(String corpusLocation, String indexFileLocation) {
 		RetrievalHelper.initHelper(corpusLocation, indexFileLocation);
 	}
 
@@ -39,13 +38,12 @@ public class Bm25RetrievalServiceImpl {
 	/***
 	 * 
 	 * 
-	 * ((k2 + 1)q) / ((k2 + q)) * ((k1 + 1) f) / ((K + f)) * log( (r + 0.5) (N
-	 * âˆ’ n âˆ’ R + r + 0.5) ) / ((n âˆ’ r + 0.5)(R âˆ’ r + 0.5))
+	 * ((k2 + 1)q) / ((k2 + q)) * ((k1 + 1) f) / ((K + f)) * log( (r + 0.5) (N − n −
+	 * R + r + 0.5) ) / ((n − r + 0.5)(R − r + 0.5))
 	 * 
 	 */
 
-	private double computeBm25ScoreForTerm(String[] queryTerms, String term,
-			int docId) {
+	private double computeBm25ScoreForTerm(String[] queryTerms, String term, int docId) {
 		// int totalRelevantDoc=0;
 		// int termRelevantDoc=0;
 		// int normalizedDocLength=0;
@@ -71,8 +69,7 @@ public class Bm25RetrievalServiceImpl {
 
 		double res1 = (((k2 + 1) * q) / (k2 + q));
 		double res2 = ((k1 + 1) * f) / (K + f);
-		double resLog = ((r + 0.5) * (N - n - R + r + 0.5))
-				/ ((n - r + 0.5) * (R - r + 0.5));
+		double resLog = ((r + 0.5) * (N - n - R + r + 0.5)) / ((n - r + 0.5) * (R - r + 0.5));
 		double result = (Math.log(resLog) * res1 * res2);
 		// System.out.println("term: " + term + "\ttf :" + f + "\tterm occurance
 		// in no of collection docs:" + n
@@ -91,20 +88,17 @@ public class Bm25RetrievalServiceImpl {
 		return (k1 * ((1 - b) + (b * dl / avdl)));
 	}
 
-	private List<DocumentRankModel> computeBm25Score(final QueryModel query)
-			throws IOException {
+	private List<DocumentRankModel> computeBm25Score(final QueryModel query) throws IOException {
 		String queryString = query.getQuery();
 		String[] searchTerms = getSearchTerms(queryString);
 		List<IndexModel> relevantIndexList = new ArrayList<>();
 
 		for (String term : searchTerms) {
-			List<IndexModel> invetedIndex = RetrievalHelper
-					.getInvertedIndex(term);
+			List<IndexModel> invetedIndex = RetrievalHelper.getInvertedIndex(term);
 			relevantIndexList.addAll(invetedIndex);
 			// int totalTf = totalTf(invetedIndex);
 		}
-		List<DocumentRankModel> bm25ScoreList = computeBm25ForRelevantDocs(
-				relevantIndexList, searchTerms);
+		List<DocumentRankModel> bm25ScoreList = computeBm25ForRelevantDocs(relevantIndexList, searchTerms);
 		return bm25ScoreList;
 
 	}
@@ -116,26 +110,22 @@ public class Bm25RetrievalServiceImpl {
 	 * @return
 	 * @throws IOException
 	 */
-	public QueryResultModel getQueryResults(final QueryModel query,
-			Integer resultSize) throws IOException {
+	public QueryResultModel getQueryResults(final QueryModel query, Integer resultSize) throws IOException {
 		QueryResultModel resultModel = new QueryResultModel();
 		List<DocumentRankModel> scoreList = computeBm25Score(query);
 		Collections.sort(scoreList);
 		resultModel.setQueryId(query.getId());
 		if (resultSize != null) {
-			List<DocumentRankModel> topRankedDocs = getTopNResults(scoreList,
-					resultSize);
+			List<DocumentRankModel> topRankedDocs = getTopNResults(scoreList, resultSize);
 			resultModel.setResults(topRankedDocs);
 		} else {
 			resultModel.setResults(scoreList);
 		}
-		System.out.println(
-				"For Query : " + query.getQuery() + " results" + resultModel);
+		System.out.println("For Query : " + query.getQuery() + " results" + resultModel);
 		return resultModel;
 	}
 
-	public QueryResultModel getQueryResults(final QueryModel query)
-			throws IOException {
+	public QueryResultModel getQueryResults(final QueryModel query) throws IOException {
 		return getQueryResults(query, null);
 	}
 
@@ -145,8 +135,7 @@ public class Bm25RetrievalServiceImpl {
 	 * 
 	 * @param result
 	 */
-	private List<DocumentRankModel> getTopNResults(
-			List<DocumentRankModel> results, int n) {
+	private List<DocumentRankModel> getTopNResults(List<DocumentRankModel> results, int n) {
 		List<DocumentRankModel> topResults = new ArrayList<>();
 		for (DocumentRankModel result : results) {
 			if (topResults.size() < n)
@@ -163,8 +152,7 @@ public class Bm25RetrievalServiceImpl {
 	 * @param serchTerms
 	 * @return
 	 */
-	private List<DocumentRankModel> computeBm25ForRelevantDocs(
-			List<IndexModel> relevantIndex, String[] serchTerms) {
+	private List<DocumentRankModel> computeBm25ForRelevantDocs(List<IndexModel> relevantIndex, String[] serchTerms) {
 		Set<Integer> docIdSet = getDocIdSet(relevantIndex);
 		List<DocumentRankModel> docScoreList = new ArrayList<>();
 		for (int docId : docIdSet) {

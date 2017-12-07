@@ -29,14 +29,11 @@ public class TermWeightIdfServiceImpl implements RetrievalService {
 		return qr;
 	}
 
-	private double fetchTfIdfProduct(String[] queryWords,
-			IndexModel indexModel) {
+	private double fetchTfIdfProduct(String[] queryWords, IndexModel indexModel) {
 		double tfIdfProduct = 0;
 		for (String word : queryWords) {
-			double tf = RetrievalHelper.getTermFreqInDoc(word,
-					indexModel.getDocId());
-			double totalTerms = RetrievalHelper
-					.getDocLenth(indexModel.getDocId());
+			double tf = RetrievalHelper.getTermFreqInDoc(word, indexModel.getDocId());
+			double totalTerms = RetrievalHelper.getDocLenth(indexModel.getDocId());
 			double idf = RetrievalHelper.getIdf(word);
 			double tfIdfForWord = (tf / totalTerms) * idf;
 			tfIdfProduct += tfIdfForWord;
@@ -51,8 +48,7 @@ public class TermWeightIdfServiceImpl implements RetrievalService {
 	private List<IndexModel> fetchRelevantDocsForQuery(String[] queryWords) {
 		List<IndexModel> docList = new ArrayList<>();
 		for (String word : queryWords) {
-			List<IndexModel> docsForWord = RetrievalHelper
-					.getInvertedIndex(word);
+			List<IndexModel> docsForWord = RetrievalHelper.getInvertedIndex(word);
 			docList.addAll(docsForWord);
 		}
 		return docList;
