@@ -39,25 +39,31 @@ public class RetrievalHelper {
 
 	private static Map<Integer, String> docIdMap = new HashMap<>();
 	private static Map<Integer, Integer> docLengthMap = new HashMap<>();
-	private static Logger LOGGER = Logger.getLogger(RetrievalHelper.class.getName());
+	private static Logger LOGGER = Logger
+			.getLogger(RetrievalHelper.class.getName());
 	private static Map<String, List<IndexModel>> unaryIndexMap = new HashMap<>();
-	
+	private static double IDF_DEFAULT = 1.5;
+
 	private RetrievalHelper() {
-		//do nothing;
+		// do nothing;
 	}
 
-	public static void initHelper(String fileLocation, String indexFileLocation) {
+	public static void initHelper(String fileLocation,
+			String indexFileLocation) {
 		try {
-				initMap(fileLocation);
-				readUnaryIndex(indexFileLocation);
-		}catch(Exception e) {
+			initMap(fileLocation);
+			readUnaryIndex(indexFileLocation);
+		} catch (Exception e) {
 			LOGGER.severe("Failed initializing helper");
 			e.printStackTrace();
 		}
 	}
-	private static <T> void PrintToFile(List<T> table, String fileLocation, String fileName) {
+
+	private static <T> void PrintToFile(List<T> table, String fileLocation,
+			String fileName) {
 		try {
-			// LOGGER.info("Printing table" + fileName + "\tTotal number of unique words = "
+			// LOGGER.info("Printing table" + fileName + "\tTotal number of
+			// unique words = "
 			// + table.size());
 			writeToJsonStream(fileLocation, fileName, table);
 		} catch (Exception e) {
@@ -67,12 +73,15 @@ public class RetrievalHelper {
 
 	}
 
-	public static <T> void writeToJsonStream(String fileLoction, String fileName, List<T> tfTable) {
+	public static <T> void writeToJsonStream(String fileLoction,
+			String fileName, List<T> tfTable) {
 		try {
 			Gson gson = new Gson();
-			LOGGER.info("Writing json data to file " + fileLoction + "/" + fileName);
+			LOGGER.info("Writing json data to file " + fileLoction + "/"
+					+ fileName);
 			JsonWriter writer = new JsonWriter(
-					new OutputStreamWriter(new FileOutputStream(new File(fileLoction + "/" + fileName))));
+					new OutputStreamWriter(new FileOutputStream(
+							new File(fileLoction + "/" + fileName))));
 			writer.setIndent("  ");
 			writer.beginArray();
 			for (T tfModel : tfTable) {
@@ -88,12 +97,15 @@ public class RetrievalHelper {
 
 	}
 
-	public static <T> void writeToJsonStream(String fileLoction, String fileName, T data) {
+	public static <T> void writeToJsonStream(String fileLoction,
+			String fileName, T data) {
 		try {
 			Gson gson = new Gson();
-			LOGGER.info("Writing json data to file " + fileLoction + "/" + fileName);
+			LOGGER.info("Writing json data to file " + fileLoction + "/"
+					+ fileName);
 			JsonWriter writer = new JsonWriter(
-					new OutputStreamWriter(new FileOutputStream(new File(fileLoction + "/" + fileName))));
+					new OutputStreamWriter(new FileOutputStream(
+							new File(fileLoction + "/" + fileName))));
 			writer.setIndent("  ");
 			writer.beginArray();
 			gson.toJson(data, data.getClass(), writer);
@@ -105,7 +117,8 @@ public class RetrievalHelper {
 		}
 	}
 
-	public static List<QueryModel> getQueryList(String fileName) throws FileNotFoundException, IOException {
+	public static List<QueryModel> getQueryList(String fileName)
+			throws FileNotFoundException, IOException {
 		try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
 			List<QueryModel> queryList = new ArrayList<>();
 			System.out.println("Reading file: " + fileName);
@@ -132,15 +145,19 @@ public class RetrievalHelper {
 	}
 
 	public static void initMap(String fileLocation) {
-		if(docIdMap.size() == 0) {
+		if (docIdMap.size() == 0) {
 			Path path = Paths.get(fileLocation);
 			int count = 1;
-			try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+			try (DirectoryStream<Path> stream = Files
+					.newDirectoryStream(path)) {
 				for (Path entry : stream) {
-	//				if (entry.toFile().isFile()) {
-					if (entry.toFile().isFile() && (getFileExtension(entry.toFile()).equals("txt"))) {
+					// if (entry.toFile().isFile()) {
+					if (entry.toFile().isFile()
+							&& (getFileExtension(entry.toFile())
+									.equals("txt"))) {
 						try (Stream<String> fileStream = Files.lines(entry)) {
-							//Integer docId = getDocId(entry.getFileName().toString());
+							// Integer docId =
+							// getDocId(entry.getFileName().toString());
 							Iterator<String> iterator = fileStream.iterator();
 							while (iterator.hasNext()) {
 								String nextLine = iterator.next();
@@ -149,14 +166,16 @@ public class RetrievalHelper {
 							}
 						}
 						docIdMap.put(count++, entry.getFileName().toString());
-						
+
 					}
 				}
-			}catch(Exception e) {
+			} catch (Exception e) {
 				LOGGER.severe("Error in initializing doc id map");
 			}
-			LOGGER.info("Init done...!!!!     Total Documents read = " + docIdMap.size());
-			PrintToFile(getDocMapperList(), getParentfileLocation(fileLocation), "docId_Map.json");
+			LOGGER.info("Init done...!!!!     Total Documents read = "
+					+ docIdMap.size());
+			PrintToFile(getDocMapperList(), getParentfileLocation(fileLocation),
+					"docId_Map.json");
 		}
 	}
 
@@ -184,28 +203,29 @@ public class RetrievalHelper {
 		}
 		return docId;
 	}
-	
-	
+
 	public static String getParentfileLocation(String fileLocation) {
 		// System.out.println("file location = "+fileLocation);
 		File f = new File(fileLocation);
 		System.out.println("file path=" + f.getAbsolutePath());
 		return f.getParent();
 	}
-	
-	
-	public static Map<String, List<IndexModel>> readJsonStream(String fileLocation) throws IOException {
+
+	public static Map<String, List<IndexModel>> readJsonStream(
+			String fileLocation) throws IOException {
 		try {
 			// LOGGER.info("reading file");
 			Gson gson = new Gson();
-			JsonReader reader = new JsonReader(
-					new InputStreamReader(new FileInputStream(new File(fileLocation))));
+			JsonReader reader = new JsonReader(new InputStreamReader(
+					new FileInputStream(new File(fileLocation))));
 			Map<String, List<IndexModel>> indexMap = new HashMap<>();
 			reader.beginArray();
 			while (reader.hasNext()) {
 
-				TermIndexModel termIndex = gson.fromJson(reader, TermIndexModel.class);
-				// LOGGER.info(""+termIndex.getTerm()+"\t "+termIndex.getInvertedList());
+				TermIndexModel termIndex = gson.fromJson(reader,
+						TermIndexModel.class);
+				// LOGGER.info(""+termIndex.getTerm()+"\t
+				// "+termIndex.getInvertedList());
 				indexMap.put(termIndex.getTerm(), termIndex.getInvertedList());
 			}
 			reader.endArray();
@@ -213,21 +233,27 @@ public class RetrievalHelper {
 			// LOGGER.info("" + indexMap.size());
 			return indexMap;
 		} catch (IOException e) {
-			LOGGER.severe("\n\n\t!!!...Not able to find index files at the given location :" + fileLocation + "\n\n");
+			LOGGER.severe(
+					"\n\n\t!!!...Not able to find index files at the given location :"
+							+ fileLocation + "\n\n");
 			LOGGER.severe("" + e.getMessage());
 			throw e;
 		}
 	}
-	
-	public static void readUnaryIndex(String indexedFileLocation) throws IOException {
-		if(unaryIndexMap.size() == 0)
+
+	public static void readUnaryIndex(String indexedFileLocation)
+			throws IOException {
+		if (unaryIndexMap.size() == 0)
 			unaryIndexMap = readJsonStream(indexedFileLocation);
 	}
-	
-	public static List<IndexModel> getInvetedIndex(String term) {
-		 return unaryIndexMap.get(term);
+
+	public static List<IndexModel> getInvertedIndex(String term) {
+		if (unaryIndexMap.containsKey(term))
+			return unaryIndexMap.get(term);
+		else
+			return null;
 	}
-	
+
 	public static Map<String, List<IndexModel>> getIndex() {
 		return unaryIndexMap;
 	}
@@ -235,30 +261,33 @@ public class RetrievalHelper {
 	private static String getFileExtension(File file) {
 		String name = file.getName();
 		try {
-			// System.out.println("extension =" + name.substring(name.lastIndexOf(".") +
+			// System.out.println("extension =" +
+			// name.substring(name.lastIndexOf(".") +
 			// 1));
 			return name.substring(name.lastIndexOf(".") + 1);
 		} catch (Exception e) {
 			return "";
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param docId
-	 * @return document length 
-	 * You might want to cast it into double for caluclations
+	 * @return document length You might want to cast it into double for
+	 *         caluclations
 	 */
 	public static int getDocLenth(int docId) {
 		return docLengthMap.get(docId);
 	}
+
 	public static double getAvgDocLength() {
-		int totalDocLength= 0;
-		 for(Map.Entry<Integer, Integer> entry: docLengthMap.entrySet()) {
-			 totalDocLength += entry.getValue();
-		 }
-		 return (double) totalDocLength/docLengthMap.size();
+		int totalDocLength = 0;
+		for (Map.Entry<Integer, Integer> entry : docLengthMap.entrySet()) {
+			totalDocLength += entry.getValue();
+		}
+		return (double) totalDocLength / docLengthMap.size();
 	}
+
 	public static int getCollectionSize() {
 		return docLengthMap.size();
 	}
@@ -270,28 +299,33 @@ public class RetrievalHelper {
 	 * @param fileLocation
 	 * @param resultType
 	 */
-	public static void printIndex(List<QueryResultModel> queryResult, String fileLocation, String resultType) {
-		
-		//query_id	Q0	doc_id	rank	 BM25_score	system_name	
-		
-		for(QueryResultModel model: queryResult) {
+	public static void printIndex(List<QueryResultModel> queryResult,
+			String fileLocation, String resultType) {
+
+		// query_id Q0 doc_id rank BM25_score system_name
+
+		for (QueryResultModel model : queryResult) {
 			int rank = 1;
 			StringBuilder sb = new StringBuilder();
-			for(DocumentRankModel docRankModel : model.getResults()) {
-				sb.append(model.getQueryId()+" Q0 ");
-				sb.append(docRankModel.getDocId()+" ");
-				sb.append(rank+" "+docRankModel.getRankScore()+" ");
-				sb.append(resultType+"\n");
+			for (DocumentRankModel docRankModel : model.getResults()) {
+				sb.append(model.getQueryId() + " Q0 ");
+				sb.append(docRankModel.getDocId() + " ");
+				sb.append(rank + " " + docRankModel.getRankScore() + " ");
+				sb.append(resultType + "\n");
 				rank++;
 			}
-			writeToFile(sb.toString(), resultType+"_"+model.getQueryId(), fileLocation);
+			writeToFile(sb.toString(), resultType + "_" + model.getQueryId(),
+					fileLocation);
 		}
-		
+
 	}
-	public static void writeToFile(String doc, String filename, String fileLocation) {
+
+	public static void writeToFile(String doc, String filename,
+			String fileLocation) {
 		BufferedWriter writer = null;
 		try {
-			writer = new BufferedWriter(new FileWriter(fileLocation+"/"+filename+".txt"));
+			writer = new BufferedWriter(
+					new FileWriter(fileLocation + "/" + filename + ".txt"));
 			writer.write(doc);
 
 		} catch (IOException e) {
@@ -302,8 +336,38 @@ public class RetrievalHelper {
 			} catch (IOException e) {
 			}
 		}
+
 	}
-	
-	
-	
+
+	public static double getTermFreqInDoc(String term, int docId) {
+		int tf = 0;
+		List<IndexModel> invetedIndex = RetrievalHelper.getInvertedIndex(term);
+		for (IndexModel model : invetedIndex) {
+			if (model.getDocId() == docId) {
+				tf = model.getTf();
+			}
+		}
+		return tf;
+	}
+
+	public static double getIdf(String word) {
+		if (RetrievalHelper.getInvertedIndex(word) != null) {
+			double noOfdocs = RetrievalHelper.getInvertedIndex(word).size();
+			double totalDocs = RetrievalHelper.getCollectionSize();
+			return Math.log((noOfdocs) / (totalDocs));
+		} else {
+			return IDF_DEFAULT;
+		}
+	}
+
+	public static double calculateQueryFrequency(String[] queryTerms,
+			String term) {
+		double freq = 0;
+		for (String nextTerm : queryTerms) {
+			if (nextTerm.equals(term))
+				freq++;
+		}
+		return freq;
+	}
+
 }
