@@ -46,10 +46,14 @@ public class DocumentHelper {
 	private static final int BIGRAM_SIZE = 2;
 	private static final int TRIGRAM_SIZE = 3;
 	// private static final String CORPUS_FOLDER_PATH = "/corpus/";
-	private static final String TAGS_TO_BE_PARSED = "p,h1,h2,h3,h4,h5,h6";
+	private static final String TAGS_TO_BE_PARSED = "p,h1,h2,h3,h4,h5,h6,pre";
 	private static final String UNARY_TOKEN_TYPE = "unary";
 	private static final String BINARY_TOKEN_TYPE = "binary";
 	private static final String TERNARY_TOKEN_TYPE = "ternary";
+	private static final Pattern SPACE_PATTERN = Pattern.compile("[\\s]", Pattern.UNICODE_CHARACTER_CLASS);
+	private static final Pattern PUNCTUATION_PATTERN = Pattern.compile("[^\\p{L}0-9- ](?!\\d)");
+	private static final Pattern DIGIT_PATTERN = Pattern.compile("[^\\p{L}0-9- .,](?=\\d)");
+	private static final boolean parseRelevantTextOnly = true;
 	private static Logger LOGGER = Logger.getLogger(DocumentHelper.class.getName());
 	private Map<Integer, String> docIdMap = new HashMap<>();
 	private Map<String, List<IndexModel>> unaryIndexMap = new HashMap<>();
@@ -59,10 +63,10 @@ public class DocumentHelper {
 
 	public boolean writeToCorpusFile(String doc, String filename, String fileLocation) {
 		try {
-			File f = new File(fileLocation + filename);
+			File f = new File(fileLocation + filename + ".txt");
 			// LOGGER.info("writing to file " + filename + " at location" +
 			// f.getAbsoluteFile());
-			FileUtils.writeStringToFile(f, doc, "UTF-8");
+			FileUtils.writeStringToFile(f , doc, "UTF-8");
 			return true;
 		} catch (IOException e) {
 			LOGGER.warning(e.getMessage());
@@ -97,10 +101,13 @@ public class DocumentHelper {
 		Path path = Paths.get(docLocation);
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
 			for (Path entry : stream) {
-				if (entry.toFile().isFile() && (getFileExtension(entry.toFile()).equals("txt"))) {
+				File file = entry.toFile();
+				String fileExtension = getFileExtension(file);
+				String fileName =getFileName(file);
+				if (file.isFile() && ((fileExtension.equals("html")) || (fileExtension.equals("txt")))) {
 					String parsedDoc = parse(getDocument(entry.toAbsolutePath().toString(), baseUrl), parsePunctuation,
 							parseCaseFolding);
-					writeToCorpusFile(parsedDoc, entry.getFileName().toString(), corpusLocation);
+					writeToCorpusFile(parsedDoc, fileName, corpusLocation);
 				} else {
 					LOGGER.info("this is intresting, i was only told to read txt files :( ");
 				}
@@ -115,16 +122,44 @@ public class DocumentHelper {
 		return docList;
 	}
 
+	private String getFileName(File file) {
+		String name = file.getName();
+		try {
+			// System.out.println("extension =" + name.substring(name.lastIndexOf(".") +
+			// 1));
+			//return name.substring(name.lastIndexOf(".") + 1);
+			return name.substring(0, name.lastIndexOf("."));
+		} catch (Exception e) {
+			return "";
+		}
+	}
+
 	public List<DocumentModel> createCorpus(String documentLocation, String corpusLocation, boolean parsePunctuation,
 			boolean parseCaseFoling) {
 		return createCorpus(documentLocation, corpusLocation, "", parsePunctuation, parseCaseFoling);
 	}
+	
+	public static String getRelevantText(String documentText) {
+		StringBuilder sb =new StringBuilder();
+		StringTokenizer tokenizer =new StringTokenizer(documentText , " ");
+		while(tokenizer.hasMoreTokens()) {
+			String nextToken = tokenizer.nextToken();
+			if(nextToken != "CACM") {
+				sb.append(nextToken+" ");
+			}else {
+				break;
+			}
+		}
+		return sb.toString();
+	}
 
 	private static String parseDocumentText(Document doc) {
 		String documentText = doc.select(TAGS_TO_BE_PARSED).text();
-		Pattern p = Pattern.compile("[\\s]", Pattern.UNICODE_CHARACTER_CLASS);
-		Matcher documentMatcher = p.matcher(documentText);
+		Matcher documentMatcher = SPACE_PATTERN.matcher(documentText);
 		String whiteSpaceCleanedDocument = documentMatcher.replaceAll(" ");
+		if(parseRelevantTextOnly) {
+			whiteSpaceCleanedDocument = getRelevantText(whiteSpaceCleanedDocument);
+		}
 		return whiteSpaceCleanedDocument;
 
 	}
@@ -133,14 +168,11 @@ public class DocumentHelper {
 		StringBuilder str = new StringBuilder();
 		StringTokenizer tokenizer = new StringTokenizer(whiteSpaceCleanedDocument, " ");
 		// Pattern supTagText = Pattern.compile("\\((\\d*?)\\)|\\[(\\d*?)\\]");
-		Pattern punctuation = Pattern.compile("[^\\p{L}0-9- ](?!\\d)");
-		Pattern digitCleaner = Pattern.compile("[^\\p{L}0-9- .,](?=\\d)");
-
 		while (tokenizer.hasMoreTokens()) {
 			String nextToken = tokenizer.nextToken();
-			Matcher punctuationMatcher = punctuation.matcher(nextToken);
+			Matcher punctuationMatcher = PUNCTUATION_PATTERN.matcher(nextToken);
 			String punctuationReplacedString = punctuationMatcher.replaceAll("");
-			Matcher digitMatcher = digitCleaner.matcher(punctuationReplacedString);
+			Matcher digitMatcher = DIGIT_PATTERN.matcher(punctuationReplacedString);
 			String digitCleanedString = digitMatcher.replaceAll("");
 			str.append(digitCleanedString + " ");
 		}

@@ -70,8 +70,8 @@ public class Bm25RetrievalServiceImpl {
 		double res2 = ((k1 + 1) * f) / (K + f);
 		double resLog = ((r + 0.5) * (N - n - R + r + 0.5)) / ((n - r + 0.5) * (R - r + 0.5));
 		double result = (Math.log(resLog) * res1 * res2);
-		System.out.println("term: " + term + "\ttf :" + f + "\tterm occurance in no of collection docs:" + n
-				+ "\tdocId : " + docId + "\tScore : " + result);
+//		System.out.println("term: " + term + "\ttf :" + f + "\tterm occurance in no of collection docs:" + n
+//				+ "\tdocId : " + docId + "\tScore : " + result);
 		return result;
 	}
 
@@ -101,7 +101,7 @@ public class Bm25RetrievalServiceImpl {
 	 */
 	private double computeK(double k1, double b, int docId) {
 		double dl = (double) RetrievalHelper.getDocLenth(docId);
-		System.out.println("docId"+docId+"length = "+dl);
+		//System.out.println("docId= "+docId+"\tlength = "+dl);
 		double avdl = RetrievalHelper.getAvgDocLength();
 		return (k1 * ((1 - b) + (b * dl / avdl)));
 	}

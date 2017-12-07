@@ -43,7 +43,7 @@ public class IndexController {
 				helper.indexFiles(corpusLocation, printInvertedIndex, printTf, printDf, printTokenInfo);
 				break;
 			}
-
+			LOGGER.info("I am done");
 		} catch (Exception e) {
 			LOGGER.info(e.getMessage());
 			e.printStackTrace();
