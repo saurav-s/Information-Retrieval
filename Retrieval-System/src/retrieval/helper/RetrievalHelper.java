@@ -273,6 +273,14 @@ public class RetrievalHelper {
 		return (double) totalDocLength / docLengthMap.size();
 	}
 
+	public static Integer getCollcetionSizeLength() {
+		int totalDocLength = 0;
+		for (Map.Entry<Integer, Integer> entry : docLengthMap.entrySet()) {
+			totalDocLength += entry.getValue();
+		}
+		return totalDocLength ;
+	}
+	
 	public static int getCollectionSize() {
 		return docLengthMap.size();
 	}
