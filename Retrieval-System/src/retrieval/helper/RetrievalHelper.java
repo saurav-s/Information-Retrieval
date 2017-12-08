@@ -20,8 +20,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.logging.Logger;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.gson.Gson;
@@ -30,6 +35,7 @@ import com.google.gson.stream.JsonWriter;
 
 import system.model.DocumentIdMapperModel;
 import system.model.DocumentRankModel;
+import system.model.DocumentTermModel;
 import system.model.IndexModel;
 import system.model.QueryModel;
 import system.model.QueryResultModel;
@@ -41,6 +47,7 @@ public class RetrievalHelper {
 	private static Map<Integer, Integer> docLengthMap = new HashMap<>();
 	private static Logger LOGGER = Logger.getLogger(RetrievalHelper.class.getName());
 	private static Map<String, List<IndexModel>> unaryIndexMap = new HashMap<>();
+	private static Map<Integer, List<DocumentTermModel>> docTermFreqMap = new HashMap<>();
 	private static double IDF_DEFAULT = 1.5;
 
 	private RetrievalHelper() {
@@ -222,8 +229,11 @@ public class RetrievalHelper {
 	}
 
 	public static void readUnaryIndex(String indexedFileLocation) throws IOException {
-		if (unaryIndexMap.size() == 0)
+		if (unaryIndexMap.size() == 0) {
 			unaryIndexMap = readJsonStream(indexedFileLocation);
+			System.out.println("\n\n\n\n\ncreating doc term map\n\n\n");
+			docTermFreqMap = getDocTermMap(unaryIndexMap);
+		}
 	}
 
 	public static List<IndexModel> getInvertedIndex(String term) {
@@ -343,5 +353,49 @@ public class RetrievalHelper {
 		}
 		return freq;
 	}
+	
+	
+	private static Map<Integer, List<DocumentTermModel>> getDocTermMap(Map<String, List<IndexModel>> unaryIndexMap) {
+		Map<Integer, List<DocumentTermModel>> docTermMap = new HashMap<>();
+		for(Map.Entry<String, List<IndexModel>> entry : unaryIndexMap.entrySet()) {
+			List<IndexModel> invertedIndex = entry.getValue();
+			Iterator<IndexModel> itr = invertedIndex.iterator();
+
+			while(itr.hasNext()) {
+				IndexModel indexModel = itr.next();
+				if(docTermMap.containsKey(indexModel.getDocId())) {
+					List<DocumentTermModel> list = docTermMap.get(indexModel.getDocId());
+					DocumentTermModel model =new DocumentTermModel();
+					model.setTerm(entry.getKey());
+					model.setTf(indexModel.getTf());
+					list.add(model);
+					docTermMap.put(indexModel.getDocId(), list);
+				}else {
+					List<DocumentTermModel> list = new ArrayList<>();
+					DocumentTermModel model =new DocumentTermModel();
+					model.setTerm(entry.getKey());
+					model.setTf(indexModel.getTf());
+					list.add(model);
+					docTermMap.put(indexModel.getDocId(), list);
+				}
+			}
+		}
+		//sort the map values
+		for(Map.Entry<Integer, List<DocumentTermModel>> entry: docTermMap.entrySet()) {
+			docTermMap.put(entry.getKey(), entry.getValue().stream().sorted().collect(Collectors.toList()));
+		}
+		LOGGER.info(""+docTermMap);
+		return docTermMap;
+		
+	}
+	
+	/*
+	 * this method returns the terms in a document in sorted order of their frequency 
+	 */
+	public static List<DocumentTermModel> getTermFreqMap(int docId){
+		return docTermFreqMap.get(docId);
+	}
+	
+	
 
 }

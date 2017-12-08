@@ -37,6 +37,7 @@ public class RetrievalController {
 		}
 		//RetrievalHelper.writeToJsonStream(indexDir, "Bm25_Query_Results.json", bm25QueryResultList);
 		RetrievalHelper.printIndex(bm25QueryResultList,indexDir, "bm25_NoStem");
+		
 		System.out.println("We are good to go !!");
 		
 	}
