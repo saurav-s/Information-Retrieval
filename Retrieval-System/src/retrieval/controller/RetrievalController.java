@@ -3,6 +3,7 @@ package retrieval.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import indexer.controller.IndexController;
 import retrieval.helper.RetrievalHelper;
 import retrieval.service.Bm25RetrievalServiceImpl;
 import retrieval.service.LuceneRetrievalServiceImpl;
@@ -16,6 +17,9 @@ public class RetrievalController {
 		String corpusLocation = args[1];
 		String indexFileLocation = args[2];
 		String queryFileLocation = args[3];
+		String rawDocDirectory = args[4];
+		String[] indexArgs = {rawDocDirectory};
+		IndexController.main(indexArgs);
 		LuceneRetrievalServiceImpl retrievalService = LuceneRetrievalServiceImpl.getRetrievalService(indexDir, corpusLocation,indexFileLocation);
 		
 		retrievalService.indexFiles(indexDir, corpusLocation);

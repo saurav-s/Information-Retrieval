@@ -11,10 +11,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -23,13 +19,12 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
-import system.model.DocumentIdMapperModel;
+import indexer.helper.DocumentHelper;
 import system.model.DocumentRankModel;
 import system.model.DocumentTermModel;
 import system.model.IndexModel;
@@ -37,10 +32,10 @@ import system.model.QueryModel;
 import system.model.QueryResultModel;
 import system.model.TermIndexModel;
 
-public class RetrievalHelper {
+public class RetrievalHelper extends DocumentHelper{
 
-	private static Map<Integer, String> docIdMap = new HashMap<>();
-	private static Map<Integer, Integer> docLengthMap = new HashMap<>();
+	//private static Map<Integer, String> docIdMap = new HashMap<>();
+	//private static Map<Integer, Integer> docLengthMap = new HashMap<>();
 	private static Logger LOGGER = Logger.getLogger(RetrievalHelper.class.getName());
 	private static Map<String, List<IndexModel>> unaryIndexMap = new HashMap<>();
 	private static Map<Integer, List<DocumentTermModel>> docTermFreqMap = new HashMap<>();
@@ -52,7 +47,9 @@ public class RetrievalHelper {
 
 	public static void initHelper(String fileLocation, String indexFileLocation) {
 		try {
-			initMap(fileLocation);
+			if(docIdMap.size() == 0) {
+				initMap(fileLocation);
+			}
 			readUnaryIndex(indexFileLocation);
 		} catch (Exception e) {
 			LOGGER.severe("Failed initializing helper");
@@ -60,18 +57,18 @@ public class RetrievalHelper {
 		}
 	}
 
-	private static <T> void PrintToFile(List<T> table, String fileLocation, String fileName) {
-		try {
-			// LOGGER.info("Printing table" + fileName + "\tTotal number of
-			// unique words = "
-			// + table.size());
-			writeToJsonStream(fileLocation, fileName, table);
-		} catch (Exception e) {
-			LOGGER.severe("Error writing file" + e.getMessage());
-			throw e;
-		}
-
-	}
+//	private static <T> void PrintToFile(List<T> table, String fileLocation, String fileName) {
+//		try {
+//			// LOGGER.info("Printing table" + fileName + "\tTotal number of
+//			// unique words = "
+//			// + table.size());
+//			writeToJsonStream(fileLocation, fileName, table);
+//		} catch (Exception e) {
+//			LOGGER.severe("Error writing file" + e.getMessage());
+//			throw e;
+//		}
+//
+//	}
 
 	public static <T> void writeToJsonStream(String fileLoction, String fileName, List<T> tfTable) {
 		try {
@@ -137,46 +134,50 @@ public class RetrievalHelper {
 		}
 	}
 
-	public static void initMap(String fileLocation) {
-		if (docIdMap.size() == 0) {
-			Path path = Paths.get(fileLocation);
-			int count = 1;
-			try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
-				for (Path entry : stream) {
-					// if (entry.toFile().isFile()) {
-					if (entry.toFile().isFile() && (getFileExtension(entry.toFile()).equals("txt"))) {
-						try (Stream<String> fileStream = Files.lines(entry)) {
-							// Integer docId =
-							// getDocId(entry.getFileName().toString());
-							Iterator<String> iterator = fileStream.iterator();
-							while (iterator.hasNext()) {
-								String nextLine = iterator.next();
-								String[] split = nextLine.split("\\s+");
-								docLengthMap.put(count, split.length);
-							}
-						}
-						docIdMap.put(count++, entry.getFileName().toString());
+//	public static void initMap(String fileLocation) {
+//		if (docIdMap.size() == 0) {
+//		}
+//	}
+//	
+//	private void createMap(String fileLocation) {
+//		Path path = Paths.get(fileLocation);
+//		int count = 1;
+//		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+//			for (Path entry : stream) {
+//				// if (entry.toFile().isFile()) {
+//				if (entry.toFile().isFile() && (getFileExtension(entry.toFile()).equals("txt"))) {
+//					try (Stream<String> fileStream = Files.lines(entry)) {
+//						// Integer docId =
+//						// getDocId(entry.getFileName().toString());
+//						Iterator<String> iterator = fileStream.iterator();
+//						while (iterator.hasNext()) {
+//							String nextLine = iterator.next();
+//							String[] split = nextLine.split("\\s+");
+//							docLengthMap.put(count, split.length);
+//						}
+//					}
+//					docIdMap.put(count++, entry.getFileName().toString());
+//
+//				}
+//			}
+//		} catch (Exception e) {
+//			LOGGER.severe("Error in initializing doc id map");
+//		}
+//		LOGGER.info("Init done...!!!!     Total Documents read = " + docIdMap.size());
+//		PrintToFile(getDocMapperList(), getParentfileLocation(fileLocation), "docId_Map.json");
+//	}
 
-					}
-				}
-			} catch (Exception e) {
-				LOGGER.severe("Error in initializing doc id map");
-			}
-			LOGGER.info("Init done...!!!!     Total Documents read = " + docIdMap.size());
-			PrintToFile(getDocMapperList(), getParentfileLocation(fileLocation), "docId_Map.json");
-		}
-	}
 
-	private static List<DocumentIdMapperModel> getDocMapperList() {
-		List<DocumentIdMapperModel> docIdMapper = new ArrayList<>();
-		for (Map.Entry<Integer, String> entry : docIdMap.entrySet()) {
-			DocumentIdMapperModel model = new DocumentIdMapperModel();
-			model.setDocId(entry.getKey());
-			model.setDocName(entry.getValue());
-			docIdMapper.add(model);
-		}
-		return docIdMapper;
-	}
+//	private static List<DocumentIdMapperModel> getDocMapperList() {
+//		List<DocumentIdMapperModel> docIdMapper = new ArrayList<>();
+//		for (Map.Entry<Integer, String> entry : docIdMap.entrySet()) {
+//			DocumentIdMapperModel model = new DocumentIdMapperModel();
+//			model.setDocId(entry.getKey());
+//			model.setDocName(entry.getValue());
+//			docIdMapper.add(model);
+//		}
+//		return docIdMapper;
+//	}
 
 	public static Integer getDocId(String docName) {
 		Integer docId = null;
@@ -243,17 +244,17 @@ public class RetrievalHelper {
 		return unaryIndexMap;
 	}
 
-	private static String getFileExtension(File file) {
-		String name = file.getName();
-		try {
-			// System.out.println("extension =" +
-			// name.substring(name.lastIndexOf(".") +
-			// 1));
-			return name.substring(name.lastIndexOf(".") + 1);
-		} catch (Exception e) {
-			return "";
-		}
-	}
+//	private static String getFileExtension(File file) {
+//		String name = file.getName();
+//		try {
+//			// System.out.println("extension =" +
+//			// name.substring(name.lastIndexOf(".") +
+//			// 1));
+//			return name.substring(name.lastIndexOf(".") + 1);
+//		} catch (Exception e) {
+//			return "";
+//		}
+//	}
 
 	/**
 	 * 

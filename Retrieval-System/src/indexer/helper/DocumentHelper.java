@@ -55,11 +55,12 @@ public class DocumentHelper {
 	private static final Pattern DIGIT_PATTERN = Pattern.compile("[^\\p{L}0-9- .,](?=\\d)");
 	private static final boolean parseRelevantTextOnly = true;
 	private static Logger LOGGER = Logger.getLogger(DocumentHelper.class.getName());
-	private Map<Integer, String> docIdMap = new HashMap<>();
-	private Map<String, List<IndexModel>> unaryIndexMap = new HashMap<>();
-	private Map<String, List<IndexModel>> binaryIndexMap = new HashMap<>();
-	private Map<String, List<IndexModel>> ternaryIndexMap = new HashMap<>();
-	private List<DocTokenModel> docTokenList = new ArrayList<>();
+	protected static Map<Integer, String> docIdMap = new HashMap<>();
+	protected static Map<Integer, Integer> docLengthMap = new HashMap<>();
+	protected static Map<String, List<IndexModel>> unaryIndexMap = new HashMap<>();
+	private static Map<String, List<IndexModel>> binaryIndexMap = new HashMap<>();
+	private static Map<String, List<IndexModel>> ternaryIndexMap = new HashMap<>();
+	private static List<DocTokenModel> docTokenList = new ArrayList<>();
 
 	public boolean writeToCorpusFile(String doc, String filename, String fileLocation) {
 		try {
@@ -185,7 +186,7 @@ public class DocumentHelper {
 	public void indexFiles(String indexedFileLocation, boolean printInvertedIndex, boolean printTermFrequency,
 			boolean printDocumentFrequency, boolean printDocTokenInfo) throws Exception {
 		LOGGER.info("trying to index files, fetching corpus from location " + indexedFileLocation);
-		this.initMap(indexedFileLocation);
+		initMap(indexedFileLocation);
 		Path path = Paths.get(indexedFileLocation);
 		int unaryTokenCount;
 		int binaryTokenCount;
@@ -273,9 +274,9 @@ public class DocumentHelper {
 	public void initIndexAndPrintTermTfAndDf(String indexedFileLocation) throws IOException {
 		try {
 			LOGGER.info("trying to read index files, fetching files from " + indexedFileLocation);
-			this.unaryIndexMap = readJsonStream(indexedFileLocation, "Unary_Index.json");
-			this.binaryIndexMap = readJsonStream(indexedFileLocation, "Binary_Index.json");
-			this.ternaryIndexMap = readJsonStream(indexedFileLocation, "Ternary_Index.json");
+			unaryIndexMap = readJsonStream(indexedFileLocation, "Unary_Index.json");
+			binaryIndexMap = readJsonStream(indexedFileLocation, "Binary_Index.json");
+			ternaryIndexMap = readJsonStream(indexedFileLocation, "Ternary_Index.json");
 			printTermFrequency(indexedFileLocation);
 			printDocumentFrequency(indexedFileLocation);
 		} catch (IOException e) {
@@ -307,7 +308,7 @@ public class DocumentHelper {
 		}
 	}
 
-	public void initMap(String fileLocation) throws Exception {
+	public static void initMap(String fileLocation) throws Exception {
 		Path path = Paths.get(fileLocation);
 		int count = 1;
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
@@ -315,6 +316,16 @@ public class DocumentHelper {
 				if (entry.toFile().isFile()) {
 					// LOGGER.info("Adding to map, count=" + count + "\t" +
 					// entry.getFileName().toString());
+					try (Stream<String> fileStream = Files.lines(entry)) {
+						// Integer docId =
+						// getDocId(entry.getFileName().toString());
+						Iterator<String> iterator = fileStream.iterator();
+						while (iterator.hasNext()) {
+							String nextLine = iterator.next();
+							String[] split = nextLine.split("\\s+");
+							docLengthMap.put(count, split.length);
+						}
+					}
 					docIdMap.put(count++, entry.getFileName().toString());
 				}
 			}
@@ -324,7 +335,7 @@ public class DocumentHelper {
 
 	}
 
-	private List<DocumentIdMapperModel> getDocMapperList() {
+	private static List<DocumentIdMapperModel> getDocMapperList() {
 		List<DocumentIdMapperModel> docIdMapper = new ArrayList<>();
 		for (Map.Entry<Integer, String> entry : docIdMap.entrySet()) {
 			DocumentIdMapperModel model = new DocumentIdMapperModel();
@@ -387,7 +398,7 @@ public class DocumentHelper {
 
 	}
 
-	private <T> void PrintTablesToFile(List<T> table, String fileLocation, String fileName) {
+	private static <T> void PrintTablesToFile(List<T> table, String fileLocation, String fileName) {
 		try {
 			// LOGGER.info("Printing table" + fileName + "\tTotal number of unique words = "
 			// + table.size());
@@ -399,7 +410,7 @@ public class DocumentHelper {
 
 	}
 
-	public <T> void writeJsonStream(String fileLoction, String fileName, List<T> tfTable) {
+	public static <T> void writeJsonStream(String fileLoction, String fileName, List<T> tfTable) {
 		try {
 			Gson gson = new Gson();
 			LOGGER.info("Writing json data to file " + fileLoction + "/" + fileName);
