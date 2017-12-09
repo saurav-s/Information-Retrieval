@@ -15,13 +15,13 @@ import system.model.QueryResultModel;
 
 public class Bm25RetrievalServiceImpl {
 
-	/**
-	 * @param corpusLocation
-	 *            :corpusLocation
-	 */
-	public Bm25RetrievalServiceImpl(String corpusLocation, String indexFileLocation) {
-		RetrievalHelper.initHelper(corpusLocation, indexFileLocation);
-	}
+//	/**
+//	 * @param corpusLocation
+//	 *            :corpusLocation
+//	 */
+//	public Bm25RetrievalServiceImpl(String corpusLocation, String indexFileLocation) {
+//		RetrievalHelper.initHelper(corpusLocation, indexFileLocation);
+//	}
 
 	// k1, k2 are constants,
 	// q is the wqf, the within query frequency,
