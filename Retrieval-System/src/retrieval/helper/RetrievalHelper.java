@@ -11,6 +11,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,6 +26,8 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
+
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
@@ -36,12 +40,13 @@ import system.model.QueryModel;
 import system.model.QueryResultModel;
 import system.model.TermIndexModel;
 
-public class RetrievalHelper extends DocumentHelper{
+public class RetrievalHelper extends DocumentHelper {
 
-	//private static Map<Integer, String> docIdMap = new HashMap<>();
-	//private static Map<Integer, Integer> docLengthMap = new HashMap<>();
+	// private static Map<Integer, String> docIdMap = new HashMap<>();
+	// private static Map<Integer, Integer> docLengthMap = new HashMap<>();
 	private static Logger LOGGER = Logger.getLogger(RetrievalHelper.class.getName());
-	//private static Map<String, List<IndexModel>> unaryIndexMap = new HashMap<>();
+	// private static Map<String, List<IndexModel>> unaryIndexMap = new
+	// HashMap<>();
 	private static Map<Integer, List<DocumentTermModel>> docTermFreqMap = new HashMap<>();
 	private static double IDF_DEFAULT = 1.5;
 
@@ -51,11 +56,11 @@ public class RetrievalHelper extends DocumentHelper{
 
 	public static void initHelper(String fileLocation, String indexFileLocation) {
 		try {
-			if(docIdMap.size() == 0) {
+			if (docIdMap.size() == 0) {
 				initMap(fileLocation);
 			}
 			readUnaryIndex(indexFileLocation);
-			if(docTermFreqMap.size() == 0) {
+			if (docTermFreqMap.size() == 0) {
 				docTermFreqMap = getDocTermMap(unaryIndexMap);
 			}
 		} catch (Exception e) {
@@ -63,20 +68,20 @@ public class RetrievalHelper extends DocumentHelper{
 			e.printStackTrace();
 		}
 	}
-	
 
-//	private static <T> void PrintToFile(List<T> table, String fileLocation, String fileName) {
-//		try {
-//			// LOGGER.info("Printing table" + fileName + "\tTotal number of
-//			// unique words = "
-//			// + table.size());
-//			writeToJsonStream(fileLocation, fileName, table);
-//		} catch (Exception e) {
-//			LOGGER.severe("Error writing file" + e.getMessage());
-//			throw e;
-//		}
-//
-//	}
+	// private static <T> void PrintToFile(List<T> table, String fileLocation,
+	// String fileName) {
+	// try {
+	// // LOGGER.info("Printing table" + fileName + "\tTotal number of
+	// // unique words = "
+	// // + table.size());
+	// writeToJsonStream(fileLocation, fileName, table);
+	// } catch (Exception e) {
+	// LOGGER.severe("Error writing file" + e.getMessage());
+	// throw e;
+	// }
+	//
+	// }
 
 	public static <T> void writeToJsonStream(String fileLoction, String fileName, List<T> tfTable) {
 		try {
@@ -142,50 +147,52 @@ public class RetrievalHelper extends DocumentHelper{
 		}
 	}
 
-//	public static void initMap(String fileLocation) {
-//		if (docIdMap.size() == 0) {
-//		}
-//	}
-//	
-//	private void createMap(String fileLocation) {
-//		Path path = Paths.get(fileLocation);
-//		int count = 1;
-//		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
-//			for (Path entry : stream) {
-//				// if (entry.toFile().isFile()) {
-//				if (entry.toFile().isFile() && (getFileExtension(entry.toFile()).equals("txt"))) {
-//					try (Stream<String> fileStream = Files.lines(entry)) {
-//						// Integer docId =
-//						// getDocId(entry.getFileName().toString());
-//						Iterator<String> iterator = fileStream.iterator();
-//						while (iterator.hasNext()) {
-//							String nextLine = iterator.next();
-//							String[] split = nextLine.split("\\s+");
-//							docLengthMap.put(count, split.length);
-//						}
-//					}
-//					docIdMap.put(count++, entry.getFileName().toString());
-//
-//				}
-//			}
-//		} catch (Exception e) {
-//			LOGGER.severe("Error in initializing doc id map");
-//		}
-//		LOGGER.info("Init done...!!!!     Total Documents read = " + docIdMap.size());
-//		PrintToFile(getDocMapperList(), getParentfileLocation(fileLocation), "docId_Map.json");
-//	}
+	// public static void initMap(String fileLocation) {
+	// if (docIdMap.size() == 0) {
+	// }
+	// }
+	//
+	// private void createMap(String fileLocation) {
+	// Path path = Paths.get(fileLocation);
+	// int count = 1;
+	// try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+	// for (Path entry : stream) {
+	// // if (entry.toFile().isFile()) {
+	// if (entry.toFile().isFile() &&
+	// (getFileExtension(entry.toFile()).equals("txt"))) {
+	// try (Stream<String> fileStream = Files.lines(entry)) {
+	// // Integer docId =
+	// // getDocId(entry.getFileName().toString());
+	// Iterator<String> iterator = fileStream.iterator();
+	// while (iterator.hasNext()) {
+	// String nextLine = iterator.next();
+	// String[] split = nextLine.split("\\s+");
+	// docLengthMap.put(count, split.length);
+	// }
+	// }
+	// docIdMap.put(count++, entry.getFileName().toString());
+	//
+	// }
+	// }
+	// } catch (Exception e) {
+	// LOGGER.severe("Error in initializing doc id map");
+	// }
+	// LOGGER.info("Init done...!!!! Total Documents read = " +
+	// docIdMap.size());
+	// PrintToFile(getDocMapperList(), getParentfileLocation(fileLocation),
+	// "docId_Map.json");
+	// }
 
-
-//	private static List<DocumentIdMapperModel> getDocMapperList() {
-//		List<DocumentIdMapperModel> docIdMapper = new ArrayList<>();
-//		for (Map.Entry<Integer, String> entry : docIdMap.entrySet()) {
-//			DocumentIdMapperModel model = new DocumentIdMapperModel();
-//			model.setDocId(entry.getKey());
-//			model.setDocName(entry.getValue());
-//			docIdMapper.add(model);
-//		}
-//		return docIdMapper;
-//	}
+	// private static List<DocumentIdMapperModel> getDocMapperList() {
+	// List<DocumentIdMapperModel> docIdMapper = new ArrayList<>();
+	// for (Map.Entry<Integer, String> entry : docIdMap.entrySet()) {
+	// DocumentIdMapperModel model = new DocumentIdMapperModel();
+	// model.setDocId(entry.getKey());
+	// model.setDocName(entry.getValue());
+	// docIdMapper.add(model);
+	// }
+	// return docIdMapper;
+	// }
 
 	public static Integer getDocId(String docName) {
 		Integer docId = null;
@@ -250,17 +257,17 @@ public class RetrievalHelper extends DocumentHelper{
 		return unaryIndexMap;
 	}
 
-//	private static String getFileExtension(File file) {
-//		String name = file.getName();
-//		try {
-//			// System.out.println("extension =" +
-//			// name.substring(name.lastIndexOf(".") +
-//			// 1));
-//			return name.substring(name.lastIndexOf(".") + 1);
-//		} catch (Exception e) {
-//			return "";
-//		}
-//	}
+	// private static String getFileExtension(File file) {
+	// String name = file.getName();
+	// try {
+	// // System.out.println("extension =" +
+	// // name.substring(name.lastIndexOf(".") +
+	// // 1));
+	// return name.substring(name.lastIndexOf(".") + 1);
+	// } catch (Exception e) {
+	// return "";
+	// }
+	// }
 
 	/**
 	 * 
@@ -285,9 +292,9 @@ public class RetrievalHelper extends DocumentHelper{
 		for (Map.Entry<Integer, Integer> entry : docLengthMap.entrySet()) {
 			totalDocLength += entry.getValue();
 		}
-		return totalDocLength ;
+		return totalDocLength;
 	}
-	
+
 	public static int getCollectionSize() {
 		return docLengthMap.size();
 	}
@@ -364,26 +371,25 @@ public class RetrievalHelper extends DocumentHelper{
 		}
 		return freq;
 	}
-	
-	
+
 	private static Map<Integer, List<DocumentTermModel>> getDocTermMap(Map<String, List<IndexModel>> unaryIndexMap) {
 		Map<Integer, List<DocumentTermModel>> docTermMap = new HashMap<>();
-		for(Map.Entry<String, List<IndexModel>> entry : unaryIndexMap.entrySet()) {
+		for (Map.Entry<String, List<IndexModel>> entry : unaryIndexMap.entrySet()) {
 			List<IndexModel> invertedIndex = entry.getValue();
 			Iterator<IndexModel> itr = invertedIndex.iterator();
 
-			while(itr.hasNext()) {
+			while (itr.hasNext()) {
 				IndexModel indexModel = itr.next();
-				if(docTermMap.containsKey(indexModel.getDocId())) {
+				if (docTermMap.containsKey(indexModel.getDocId())) {
 					List<DocumentTermModel> list = docTermMap.get(indexModel.getDocId());
-					DocumentTermModel model =new DocumentTermModel();
+					DocumentTermModel model = new DocumentTermModel();
 					model.setTerm(entry.getKey());
 					model.setTf(indexModel.getTf());
 					list.add(model);
 					docTermMap.put(indexModel.getDocId(), list);
-				}else {
+				} else {
 					List<DocumentTermModel> list = new ArrayList<>();
-					DocumentTermModel model =new DocumentTermModel();
+					DocumentTermModel model = new DocumentTermModel();
 					model.setTerm(entry.getKey());
 					model.setTf(indexModel.getTf());
 					list.add(model);
@@ -391,37 +397,36 @@ public class RetrievalHelper extends DocumentHelper{
 				}
 			}
 		}
-		//sort the map values
-		for(Map.Entry<Integer, List<DocumentTermModel>> entry: docTermMap.entrySet()) {
+		// sort the map values
+		for (Map.Entry<Integer, List<DocumentTermModel>> entry : docTermMap.entrySet()) {
 			docTermMap.put(entry.getKey(), entry.getValue().stream().sorted().collect(Collectors.toList()));
 		}
-		LOGGER.info(""+docTermMap);
+		LOGGER.info("" + docTermMap);
 		return docTermMap;
-		
+
 	}
-	
+
 	/*
-	 * this method returns the terms in a document in sorted order of their frequency 
+	 * this method returns the terms in a document in sorted order of their
+	 * frequency
 	 */
-	public static List<DocumentTermModel> getTermFreqMap(int docId){
+	public static List<DocumentTermModel> getTermFreqMap(int docId) {
 		return docTermFreqMap.get(docId);
 	}
-	/* Citation :
-	Took this code from World Wide Web, to perform sorting in Map based on value.
-	URL : https://stackoverflow.com/questions/109383/sort-a-mapkey-value-by-values-java*/
-	
+	/*
+	 * Citation : Took this code from World Wide Web, to perform sorting in Map
+	 * based on value. URL :
+	 * https://stackoverflow.com/questions/109383/sort-a-mapkey-value-by-values-
+	 * java
+	 */
+
 	public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
-	    return map.entrySet()
-	              .stream()
-	              .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
-	              .collect(Collectors.toMap(
-	                Map.Entry::getKey, 
-	                Map.Entry::getValue, 
-	                (e1, e2) -> e1, 
-	                LinkedHashMap::new
-	              ));
+		return map.entrySet().stream().sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 	}
-	
+
+	// GIVEN:
+	// RETURNS:
 	public static String[] parseQuery(QueryModel query) {
 		StringTokenizer tokenizer = new StringTokenizer(query.getQuery(), " ");
 		Set<String> tokenList = new HashSet<>();
@@ -431,6 +436,41 @@ public class RetrievalHelper extends DocumentHelper{
 		}
 		return (String[]) tokenList.toArray();
 	}
-	
 
+	// GIVEN: an absolute path of the file
+	// RETURNS: a file object
+	public static File getFile(String absPath) {
+		File textFile = null;
+		try {
+			textFile = new File(absPath);
+			if (!textFile.exists()) {
+				textFile.createNewFile();
+			}
+			return textFile;
+		} catch (IOException io) {
+			System.out.println("RetrievalHelper::getFile -- Error Message: IOException.");
+		}
+		return textFile;
+	}
+
+	// GIVEN: an absolute path of the file
+	// RETURNS: all the lines of the text file as a Set.
+	public static Set<String> parseFileContentToString(String absPath) {
+		Set<String> lineSet = new HashSet<String>();
+		if (Files.isDirectory(Paths.get(absPath))) {
+			System.out.println("RetrievalHelper::parseFileContentToString -- Error Message: Given path of a directory. "
+					+ "Expected path of a file.");
+		} else if (FileUtils.getFile(absPath).getName().contains(".txt")) {
+			try {
+				List<String> lines = Files.readAllLines(Paths.get(absPath));
+				lineSet.addAll(lines);
+			} catch (IOException io) {
+				System.out.println("RetrievalHelper::parseFileContentToString -- Error Message: IOException.");
+			}
+		} else {
+			System.out
+					.println("RetrievalHelper::parseFileContentToString -- Error Message:Please provide a text file.");
+		}
+		return lineSet;
+	}
 }
