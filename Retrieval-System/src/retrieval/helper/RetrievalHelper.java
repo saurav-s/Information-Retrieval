@@ -14,10 +14,12 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -418,6 +420,16 @@ public class RetrievalHelper extends DocumentHelper{
 	                (e1, e2) -> e1, 
 	                LinkedHashMap::new
 	              ));
+	}
+	
+	public static String[] parseQuery(QueryModel query) {
+		StringTokenizer tokenizer = new StringTokenizer(query.getQuery(), " ");
+		Set<String> tokenList = new HashSet<>();
+		while (tokenizer.hasMoreTokens()) {
+			String nextToken = tokenizer.nextToken();
+			tokenList.add(nextToken);
+		}
+		return (String[]) tokenList.toArray();
 	}
 	
 
