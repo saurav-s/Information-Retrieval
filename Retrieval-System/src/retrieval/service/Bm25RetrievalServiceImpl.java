@@ -38,8 +38,8 @@ public class Bm25RetrievalServiceImpl {
 	/***
 	 * 
 	 * 
-	 * ((k2 + 1)q) / ((k2 + q)) * ((k1 + 1) f) / ((K + f)) * log( (r + 0.5) (N − n −
-	 * R + r + 0.5) ) / ((n − r + 0.5)(R − r + 0.5))
+	 * ((k2 + 1)q) / ((k2 + q)) * ((k1 + 1) f) / ((K + f)) * log( (r + 0.5) (N
+	 * − n − R + r + 0.5) ) / ((n − r + 0.5)(R − r + 0.5))
 	 * 
 	 */
 
@@ -89,8 +89,7 @@ public class Bm25RetrievalServiceImpl {
 	}
 
 	private List<DocumentRankModel> computeBm25Score(final QueryModel query) throws IOException {
-		String queryString = query.getQuery();
-		String[] searchTerms = getSearchTerms(queryString);
+		String[] searchTerms = RetrievalHelper.parseQuery(query);
 		List<IndexModel> relevantIndexList = new ArrayList<>();
 
 		for (String term : searchTerms) {
@@ -172,10 +171,6 @@ public class Bm25RetrievalServiceImpl {
 			docIdList.add(index.getDocId());
 		}
 		return docIdList;
-	}
-
-	private String[] getSearchTerms(String queryString) {
-		return queryString.split("\\s+");
 	}
 
 	private double computeBm25ScoreForDocument(String[] queryTerms, int docId) {

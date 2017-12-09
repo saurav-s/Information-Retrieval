@@ -7,6 +7,7 @@ import indexer.controller.IndexController;
 import retrieval.helper.RetrievalHelper;
 import retrieval.service.Bm25RetrievalServiceImpl;
 import retrieval.service.LuceneRetrievalServiceImpl;
+import retrieval.service.TermWeightIdfServiceImpl;
 import system.model.QueryModel;
 import system.model.QueryResultModel;
 
@@ -42,6 +43,13 @@ public class RetrievalController {
 		//RetrievalHelper.writeToJsonStream(indexDir, "Bm25_Query_Results.json", bm25QueryResultList);
 		RetrievalHelper.printIndex(bm25QueryResultList,indexDir, "bm25_NoStem");
 		
+		TermWeightIdfServiceImpl idfService = new TermWeightIdfServiceImpl();
+		List<QueryResultModel> tfIdfQueryResultList = new ArrayList<>();
+		for (QueryModel query : queryList) {
+			QueryResultModel tfIdf = idfService.getQueryResults(query, 100);
+			tfIdfQueryResultList.add(tfIdf);
+		}
+		RetrievalHelper.printIndex(tfIdfQueryResultList, indexDir, "tfIdf_NoStem");
 		System.out.println("We are good to go !!");
 		
 	}

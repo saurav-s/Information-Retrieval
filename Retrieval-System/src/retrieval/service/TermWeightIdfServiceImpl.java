@@ -3,7 +3,6 @@ package retrieval.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import retrieval.helper.RetrievalHelper;
 import system.model.DocumentRankModel;
@@ -15,7 +14,7 @@ public class TermWeightIdfServiceImpl implements RetrievalService {
 
 	@Override
 	public QueryResultModel getQueryResults(QueryModel query, int size) {
-		String[] queryWords = parseQuery(query);
+		String[] queryWords = RetrievalHelper.parseQuery(query);
 		List<IndexModel> docList = fetchRelevantDocsForQuery(queryWords);
 		QueryResultModel qr = new QueryResultModel();
 		List<DocumentRankModel> drmList = new ArrayList<DocumentRankModel>();
@@ -23,6 +22,7 @@ public class TermWeightIdfServiceImpl implements RetrievalService {
 			DocumentRankModel drm = new DocumentRankModel();
 			drm.setDocId(indexModel.getDocId());
 			drm.setRankScore(fetchTfIdfProduct(queryWords, indexModel));
+			System.out.println(drm.getDocId()+" : "+drm.getRankScore());
 			drmList.add(drm);
 		}
 		Collections.sort(drmList);
@@ -41,10 +41,6 @@ public class TermWeightIdfServiceImpl implements RetrievalService {
 			tfIdfProduct += tfIdfForWord;
 		}
 		return tfIdfProduct;
-	}
-
-	private String[] parseQuery(QueryModel query) {
-		return Stream.of(query.getQuery()).toArray(String[]::new);
 	}
 
 	private List<IndexModel> fetchRelevantDocsForQuery(String[] queryWords) {
