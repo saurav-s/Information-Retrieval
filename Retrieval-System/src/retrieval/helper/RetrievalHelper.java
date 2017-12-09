@@ -37,7 +37,7 @@ public class RetrievalHelper extends DocumentHelper{
 	//private static Map<Integer, String> docIdMap = new HashMap<>();
 	//private static Map<Integer, Integer> docLengthMap = new HashMap<>();
 	private static Logger LOGGER = Logger.getLogger(RetrievalHelper.class.getName());
-	private static Map<String, List<IndexModel>> unaryIndexMap = new HashMap<>();
+	//private static Map<String, List<IndexModel>> unaryIndexMap = new HashMap<>();
 	private static Map<Integer, List<DocumentTermModel>> docTermFreqMap = new HashMap<>();
 	private static double IDF_DEFAULT = 1.5;
 
@@ -51,11 +51,15 @@ public class RetrievalHelper extends DocumentHelper{
 				initMap(fileLocation);
 			}
 			readUnaryIndex(indexFileLocation);
+			if(docTermFreqMap.size() == 0) {
+				docTermFreqMap = getDocTermMap(unaryIndexMap);
+			}
 		} catch (Exception e) {
 			LOGGER.severe("Failed initializing helper");
 			e.printStackTrace();
 		}
 	}
+	
 
 //	private static <T> void PrintToFile(List<T> table, String fileLocation, String fileName) {
 //		try {
@@ -228,8 +232,6 @@ public class RetrievalHelper extends DocumentHelper{
 	public static void readUnaryIndex(String indexedFileLocation) throws IOException {
 		if (unaryIndexMap.size() == 0) {
 			unaryIndexMap = readJsonStream(indexedFileLocation);
-			System.out.println("\n\n\n\n\ncreating doc term map\n\n\n");
-			docTermFreqMap = getDocTermMap(unaryIndexMap);
 		}
 	}
 

@@ -161,7 +161,7 @@ public class DocumentHelper {
 		if (parseRelevantTextOnly) {
 			whiteSpaceCleanedDocument = getRelevantText(whiteSpaceCleanedDocument);
 		}
-		System.out.println("\n\nDoctext = \t" + whiteSpaceCleanedDocument);
+		//LOGGER.info("\n\nDoctext = \t" + whiteSpaceCleanedDocument);
 		return whiteSpaceCleanedDocument;
 
 	}

@@ -92,7 +92,7 @@ public class LuceneRetrievalServiceImpl {
 				doc.add(new StringField("filename", f.getName(), Field.Store.YES));
 
 				writer.addDocument(doc);
-				System.out.println("Added: " + f);
+				//System.out.println("Added: " + f);
 			} catch (Exception e) {
 				System.out.println("Could not add: " + f);
 			} finally {
