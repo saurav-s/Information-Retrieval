@@ -14,6 +14,7 @@ import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,19 +48,19 @@ public class RetrievalHelper extends DocumentHelper {
 	private static Logger LOGGER = Logger.getLogger(RetrievalHelper.class.getName());
 	// private static Map<String, List<IndexModel>> unaryIndexMap = new
 	// HashMap<>();
-	private static Map<Integer, List<DocumentTermModel>> docTermFreqMap = new HashMap<>();
+
 	private static double IDF_DEFAULT = 1.5;
 
 	private RetrievalHelper() {
 		// do nothing;
 	}
 
-	public static void initHelper(String fileLocation, String indexFileLocation) {
+	public static void initHelper() {
 		try {
-			if (docIdMap.size() == 0) {
-				initMap(fileLocation);
-			}
-			readUnaryIndex(indexFileLocation);
+//			if (docIdMap.size() == 0) {
+//				initMap(fileLocation);
+//			}
+//			readUnaryIndex(indexFileLocation);
 			if (docTermFreqMap.size() == 0) {
 				docTermFreqMap = getDocTermMap(unaryIndexMap);
 			}
@@ -315,7 +316,7 @@ public class RetrievalHelper extends DocumentHelper {
 			StringBuilder sb = new StringBuilder();
 			for (DocumentRankModel docRankModel : model.getResults()) {
 				sb.append(model.getQueryId() + " Q0 ");
-				sb.append(docRankModel.getDocId() + " ");
+				sb.append(docIdMap.get(docRankModel.getDocId()) + " ");
 				sb.append(rank + " " + docRankModel.getRankScore() + " ");
 				sb.append(resultType + "\n");
 				rank++;
@@ -429,12 +430,12 @@ public class RetrievalHelper extends DocumentHelper {
 	// RETURNS:
 	public static String[] parseQuery(QueryModel query) {
 		StringTokenizer tokenizer = new StringTokenizer(query.getQuery(), " ");
-		Set<String> tokenList = new HashSet<>();
+		Set<String> tokenList = new HashSet<String>();
 		while (tokenizer.hasMoreTokens()) {
 			String nextToken = tokenizer.nextToken();
 			tokenList.add(nextToken);
 		}
-		return (String[]) tokenList.toArray();
+		return Arrays.copyOf(tokenList.toArray(), tokenList.toArray().length, String[].class);
 	}
 
 	// GIVEN: an absolute path of the file
