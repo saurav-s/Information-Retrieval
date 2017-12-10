@@ -26,7 +26,7 @@ public class PsuedoExpansionService {
 		
 		else if(modelType.equalsIgnoreCase("QLRM"))
 		{
-			QLRMService qlr = new QLRMService();
+			QLRMServiceImpl qlr = new QLRMServiceImpl();
 			QueryResultModel qr =qlr.getQueryResults(query, count);
 			QueryModel expandedqr = prs.performPsuedoRelevance(query, qr.getResults());
 			return qlr.getQueryResults(expandedqr, count);

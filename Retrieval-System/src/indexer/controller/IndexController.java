@@ -17,6 +17,10 @@ public class IndexController {
 	private static boolean printTokenInfo = true;
 	private static String taskType = "all";
 
+	// documentLocation: raw html documents
+	// C:\Users\rahul\Desktop\Information-Retrieval\cacm
+	// corpusLocation is made at the root location in a directory called corpus
+
 	public static void main(String args[]) {
 		try {
 

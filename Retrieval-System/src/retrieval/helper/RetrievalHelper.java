@@ -317,8 +317,9 @@ public class RetrievalHelper extends DocumentHelper {
 	 * @param resultType
 	 */
 	public static void printIndex(List<QueryResultModel> queryResult, String fileLocation, String resultType) {
-		printIndex(queryResult,fileLocation,resultType,false);
+		printIndex(queryResult, fileLocation, resultType, false);
 	}
+
 	/**
 	 * 
 	 * @param queryResult
@@ -327,7 +328,8 @@ public class RetrievalHelper extends DocumentHelper {
 	 * @param resultType
 	 * @param printSnippet
 	 */
-	public static void printIndex(List<QueryResultModel> queryResult, String fileLocation, String resultType, boolean printSnippet) {
+	public static void printIndex(List<QueryResultModel> queryResult, String fileLocation, String resultType,
+			boolean printSnippet) {
 
 		// query_id Q0 doc_id rank BM25_score system_name
 
@@ -340,7 +342,7 @@ public class RetrievalHelper extends DocumentHelper {
 				sb.append(rank + " " + docRankModel.getRankScore() + " ");
 				sb.append(resultType);
 				sb.append("\n");
-				if(printSnippet) {
+				if (printSnippet) {
 					sb.append(docRankModel.getSnippet());
 					sb.append("\n\n");
 				}
@@ -377,6 +379,7 @@ public class RetrievalHelper extends DocumentHelper {
 			sb.append("P@20: "+ p20+ "\n");
 			writeToFile(sb.toString(), "Eval_"+systemEvl.getModelName(), fileLocation);
 	}
+
 
 
 	public static void writeToFile(String doc, String filename, String fileLocation) {
@@ -479,8 +482,9 @@ public class RetrievalHelper extends DocumentHelper {
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 	}
 
-	// GIVEN:
-	// RETURNS:
+	// GIVEN: a QueryModel having a query Id and a query
+	// WHERE: tokenizer tokenizes the given query using '//s+' as the delimiter
+	// RETURNS: the given query in a tokenized form in an array of tokens
 	public static String[] parseQuery(QueryModel query) {
 		StringTokenizer tokenizer = new StringTokenizer(query.getQuery(), " ");
 		Set<String> tokenList = new HashSet<String>();
@@ -528,8 +532,8 @@ public class RetrievalHelper extends DocumentHelper {
 		return lineSet;
 	}
 
-	// GIVEN:
-	// RETURNS:
+	// GIVEN: the text in a document
+	// RETURNS: the same text but stop words excluded
 	public static String removeStopWordsFromDoc(String docText) {
 		Set<String> commonWords = RetrievalHelper.parseFileContentToString();
 		StringTokenizer tokens = new StringTokenizer(docText, " ");
@@ -568,5 +572,22 @@ public class RetrievalHelper extends DocumentHelper {
 			System.out.println("RetrievalHelper::parseQueriesFromXML -- ErrorMessage:IO Exception -- Invalid Path");
 		}
 		return queryList;
+	}
+
+	/**
+	 * 
+	 * Expects list in a sorted order
+	 * 
+	 * @param result
+	 */
+	public static List<DocumentRankModel> getTopNResults(List<DocumentRankModel> results, int n) {
+		List<DocumentRankModel> topResults = new ArrayList<>();
+		for (DocumentRankModel result : results) {
+			if (topResults.size() < n)
+				topResults.add(result);
+			else
+				break;
+		}
+		return topResults;
 	}
 }
