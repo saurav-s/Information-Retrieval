@@ -359,7 +359,7 @@ public class DocumentHelper {
 	}
 
 	public static String getDocName(Integer docid) {
-		return docIdMap.get(docid);
+		return docIdMap.get(docid).replaceAll(".txt", "");
 	}
 
 	public static String getParentfileLocation(String fileLocation) {

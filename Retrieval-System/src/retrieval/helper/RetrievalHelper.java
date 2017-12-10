@@ -365,6 +365,8 @@ public class RetrievalHelper extends DocumentHelper {
 			{
 				sb.append(evlResult.getQueryId()+ " Q0 ");
 				sb.append(docEval.getDocId()+" "+rank);
+				if(docEval.isRelevant())sb.append(" R ");
+				else sb.append(" N ");
 				sb.append(" Percision: "+docEval.getPrecision());
 				sb.append(" Recal: "+docEval.getRecall()+" ");
 				sb.append(systemEvl.getModelName() + "\n");
