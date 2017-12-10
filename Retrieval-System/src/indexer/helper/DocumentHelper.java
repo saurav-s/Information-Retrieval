@@ -620,13 +620,13 @@ public class DocumentHelper {
 					docId = Integer.parseInt(line.split(" ")[1]);
 					fileName = "STEMMED-CACM-" + (docId - 1);
 					if (content.length() > 0) {
-						writeToCorpusFile(content.toString(), fileName, writePath);
+						writeToCorpusFile(content.toString().trim(), fileName, writePath);
 						System.out.println("Content written to file " + fileName);
 						content.delete(0, content.length());
 					}
 					continue;
 				} else {
-					content.append(line).append(System.lineSeparator());
+					content.append(line).append(" ");
 				}
 			}
 			fileName = "STEMMED-CACM-" + (docId);
@@ -665,13 +665,4 @@ public class DocumentHelper {
 		}
 		return map;
 	}
-
-	public static void main(String[] args) {
-		DocumentHelper docHelper = new DocumentHelper();
-		System.out.println("Reading....");
-		String readPath = "C:\\Users\\rahul\\Desktop\\Information-Retrieval\\cacm_stem.txt";
-		String writePath = ".\\Information-Retrieval\\stemmedCorpus\\";
-		docHelper.createStemmedCorpus(readPath, writePath);
-	}
-
 }
