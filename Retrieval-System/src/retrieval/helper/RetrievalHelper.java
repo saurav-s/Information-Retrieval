@@ -26,8 +26,13 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
@@ -52,6 +57,7 @@ public class RetrievalHelper extends DocumentHelper {
 	// private static Map<String, List<IndexModel>> unaryIndexMap = new
 	// HashMap<>();
 	private static String COMMON_WORDS = ".\\common_words.txt";
+	private static String CACM_RAW_QUERIES = ".\\cacm_raw_queries.txt";
 	private static double IDF_DEFAULT = 1.5;
 
 	private RetrievalHelper() {
@@ -511,5 +517,26 @@ public class RetrievalHelper extends DocumentHelper {
 				str.append(word + " ");
 		}
 		return str.toString().trim();
+	}
+
+	public static Map<Integer, String> parseQueriesFromXML() {
+		Map<Integer, String> map = new HashMap<>();
+		try (Stream<String> lines = Files.lines(
+				Paths.get(RetrievalHelper.CACM_RAW_QUERIES),
+				Charsets.toCharset("UTF-8"))) {
+			StringBuffer sb = new StringBuffer();
+			lines.forEach((l) -> {
+				sb.append(l + System.lineSeparator());
+			});
+			Elements docs = Jsoup.parse(sb.toString()).select("DOC");
+			for (Element element : docs) {
+				int queryId = Integer.parseInt(element.select("DOCNO").text());
+				String query = element.ownText();
+				map.put(queryId, query);
+			}
+		} catch (IOException io) {
+			System.out.println("IO Exception");
+		}
+		return map;
 	}
 }
