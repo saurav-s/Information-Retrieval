@@ -317,6 +317,17 @@ public class RetrievalHelper extends DocumentHelper {
 	 * @param resultType
 	 */
 	public static void printIndex(List<QueryResultModel> queryResult, String fileLocation, String resultType) {
+		printIndex(queryResult,fileLocation,resultType,false);
+	}
+	/**
+	 * 
+	 * @param queryResult
+	 * @param filename
+	 * @param fileLocation
+	 * @param resultType
+	 * @param printSnippet
+	 */
+	public static void printIndex(List<QueryResultModel> queryResult, String fileLocation, String resultType, boolean printSnippet) {
 
 		// query_id Q0 doc_id rank BM25_score system_name
 
@@ -327,7 +338,12 @@ public class RetrievalHelper extends DocumentHelper {
 				sb.append(model.getQueryId() + " Q0 ");
 				sb.append(docIdMap.get(docRankModel.getDocId()) + " ");
 				sb.append(rank + " " + docRankModel.getRankScore() + " ");
-				sb.append(resultType + "\n");
+				sb.append(resultType);
+				sb.append("\n");
+				if(printSnippet) {
+					sb.append(docRankModel.getSnippet());
+					sb.append("\n\n");
+				}
 				rank++;
 			}
 			writeToFile(sb.toString(), resultType + "_" + model.getQueryId(), fileLocation);

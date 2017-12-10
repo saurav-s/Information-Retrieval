@@ -21,6 +21,7 @@ public class RetrievalController {
 		String rawDocDirectory = args[4];
 		String[] indexArgs = { rawDocDirectory };
 		IndexController.main(indexArgs);
+		RetrievalHelper.initHelper();
 		LuceneRetrievalServiceImpl retrievalService = LuceneRetrievalServiceImpl.getRetrievalService(indexDir,
 				corpusLocation, indexFileLocation);
 
@@ -33,7 +34,7 @@ public class RetrievalController {
 		}
 		// RetrievalHelper.writeToJsonStream(indexDir,
 		// "Lucene_Query_Results.json", luceneQueryResultList);
-		RetrievalHelper.printIndex(luceneQueryResultList, indexDir, "lucene_NoStem");
+		RetrievalHelper.printIndex(luceneQueryResultList, indexDir, "lucene_NoStem", true);
 
 		List<QueryResultModel> bm25QueryResultList = new ArrayList<>();
 		Bm25RetrievalServiceImpl bm25RetrievalService = new Bm25RetrievalServiceImpl();
