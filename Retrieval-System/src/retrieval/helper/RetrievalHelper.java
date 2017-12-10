@@ -34,11 +34,14 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 import indexer.helper.DocumentHelper;
+import system.model.DocumentEvaluationModel;
 import system.model.DocumentRankModel;
 import system.model.DocumentTermModel;
+import system.model.EvaluationResultModel;
 import system.model.IndexModel;
 import system.model.QueryModel;
 import system.model.QueryResultModel;
+import system.model.SystemEvaluationModel;
 import system.model.TermIndexModel;
 
 public class RetrievalHelper extends DocumentHelper {
@@ -324,6 +327,26 @@ public class RetrievalHelper extends DocumentHelper {
 			writeToFile(sb.toString(), resultType + "_" + model.getQueryId(), fileLocation);
 		}
 
+	}
+	
+	public static void printEvaluatedFile(SystemEvaluationModel systemEvl, String fileLocation )
+	{
+		
+		for (EvaluationResultModel evlResult : systemEvl.getEvaluatedResults()) {
+			int rank = 1;
+			StringBuilder sb = new StringBuilder();
+			for(DocumentEvaluationModel docEval  :evlResult.getResults())
+			{
+				sb.append(evlResult.getQueryId()+ " Q0 ");
+				sb.append(docEval.getDocId()+" "+rank);
+				sb.append(" Percision: "+docEval.getPrecision());
+				sb.append(" Recal: "+docEval.getRecall()+" ");
+				sb.append(systemEvl.getModelName() + "\n");
+				rank++;
+			}
+			writeToFile(sb.toString(), "Eval_"+systemEvl.getModelName() + "_" + evlResult.getQueryId(), fileLocation);
+		}
+		
 	}
 
 	public static void writeToFile(String doc, String filename, String fileLocation) {
