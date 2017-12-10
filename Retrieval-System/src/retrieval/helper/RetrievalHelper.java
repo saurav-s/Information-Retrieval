@@ -351,23 +351,33 @@ public class RetrievalHelper extends DocumentHelper {
 
 	}
 
-	public static void printEvaluatedFile(SystemEvaluationModel systemEvl, String fileLocation) {
-
+	
+	public static void printEvaluatedFile(SystemEvaluationModel systemEvl, String fileLocation )
+	{
+		StringBuilder sb = new StringBuilder();
+		double p5=0.0;
+		double p20=0.0;
 		for (EvaluationResultModel evlResult : systemEvl.getEvaluatedResults()) {
 			int rank = 1;
-			StringBuilder sb = new StringBuilder();
-			for (DocumentEvaluationModel docEval : evlResult.getResults()) {
-				sb.append(evlResult.getQueryId() + " Q0 ");
-				sb.append(docEval.getDocId() + " " + rank);
-				sb.append(" Percision: " + docEval.getPrecision());
-				sb.append(" Recal: " + docEval.getRecall() + " ");
+			for(DocumentEvaluationModel docEval  :evlResult.getResults())
+			{
+				sb.append(evlResult.getQueryId()+ " Q0 ");
+				sb.append(docEval.getDocId()+" "+rank);
+				sb.append(" Percision: "+docEval.getPrecision());
+				sb.append(" Recal: "+docEval.getRecall()+" ");
 				sb.append(systemEvl.getModelName() + "\n");
 				rank++;
+				if(rank == 5) p5=docEval.getPrecision();
+				if(rank == 20) p20=docEval.getPrecision();
 			}
-			writeToFile(sb.toString(), "Eval_" + systemEvl.getModelName() + "_" + evlResult.getQueryId(), fileLocation);
 		}
-
+			sb.append("MAP: "+ systemEvl.getMap()+ "\n");
+			sb.append("MRR: "+ systemEvl.getMrr()+ "\n");
+			sb.append("P@5: "+ p5+ "\n");
+			sb.append("P@20: "+ p20+ "\n");
+			writeToFile(sb.toString(), "Eval_"+systemEvl.getModelName(), fileLocation);
 	}
+
 
 	public static void writeToFile(String doc, String filename, String fileLocation) {
 		BufferedWriter writer = null;
