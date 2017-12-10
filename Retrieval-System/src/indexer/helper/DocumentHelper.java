@@ -64,6 +64,7 @@ public class DocumentHelper {
 	private static Map<String, List<IndexModel>> binaryIndexMap = new HashMap<>();
 	private static Map<String, List<IndexModel>> ternaryIndexMap = new HashMap<>();
 	private static List<DocTokenModel> docTokenList = new ArrayList<>();
+	private static String QUERY_RELEVANCE_FILE = ".\\cacm.rel.txt";
 
 	public boolean writeToCorpusFile(String doc, String filename, String fileLocation) {
 		try {
@@ -656,4 +657,35 @@ public class DocumentHelper {
 			System.err.println("DocumentHelper::createStemmedCorpus -- ErrorMessage: IOException: Invalid Path.");
 		}
 	}
+
+	// GIVEN:
+	// RETURNS:
+	public static Map<Integer, List<String>> getQueryRelevanceMap() {
+		Map<Integer, List<String>> map = new HashMap<Integer, List<String>>();
+		try (Stream<String> lines = Files.lines(Paths.get(DocumentHelper.QUERY_RELEVANCE_FILE),
+				Charsets.toCharset("UTF-8"))) {
+			Iterator<String> linesIt = lines.iterator();
+			while (linesIt.hasNext()) {
+				String line = linesIt.next();
+				String[] tokens = line.split(" ");
+				Integer key = Integer.parseInt(tokens[0]);
+				if (map.containsKey(key)) {
+					String docName = tokens[2];
+					List<String> docList = map.get(key);
+					docList.add(docName);
+					map.put(key, docList);
+				} else {
+					String docName = tokens[2];
+					List<String> docList = new ArrayList<String>();
+					docList.add(docName);
+					map.put(key, docList);
+				}
+
+			}
+		} catch (IOException io) {
+			System.err.println("DocumentHelper::getQueryRelevanceMap -- ErrorMessage: IOException: Invalid Path.");
+		}
+		return map;
+	}
+
 }
