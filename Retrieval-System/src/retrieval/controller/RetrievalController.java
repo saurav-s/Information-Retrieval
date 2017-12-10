@@ -10,8 +10,10 @@ import retrieval.service.LuceneRetrievalServiceImpl;
 import retrieval.service.PsuedoExpansionService;
 import retrieval.service.QLRMServiceImpl;
 import retrieval.service.TermWeightIdfServiceImpl;
+import retrieval.system.evaluation.Evaluate;
 import system.model.QueryModel;
 import system.model.QueryResultModel;
+import system.model.SystemEvaluationModel;
 
 public class RetrievalController {
 	public static void main(String[] args) throws Exception {
@@ -67,6 +69,19 @@ public class RetrievalController {
 			psuedoExpandedList.add(pusedoQuery);
 		}
 		RetrievalHelper.printIndex(psuedoExpandedList, indexDir, "PSUEDO_TFIdf_NoStem");
+
+		Evaluate evl = new Evaluate();
+		SystemEvaluationModel tfEval = evl.performEvaluation(tfIdfQueryResultList, "tfIdf_NoStem");
+		SystemEvaluationModel qlrmEval = evl.performEvaluation(qlrmQueryList, "QLR_NoStem");
+		SystemEvaluationModel bm25Eval = evl.performEvaluation(bm25QueryResultList, "bm25_NoStem");
+		SystemEvaluationModel luceneEval = evl.performEvaluation(luceneQueryResultList, "lucene_NoStem");
+		SystemEvaluationModel pusedoEval = evl.performEvaluation(psuedoExpandedList, "PSUEDO_TFIdf_NoStem");
+
+		RetrievalHelper.printEvaluatedFile(tfEval, indexDir);
+		RetrievalHelper.printEvaluatedFile(qlrmEval, indexDir);
+		RetrievalHelper.printEvaluatedFile(bm25Eval, indexDir);
+		RetrievalHelper.printEvaluatedFile(luceneEval, indexDir);
+		RetrievalHelper.printEvaluatedFile(pusedoEval, indexDir);
 		System.out.println("We are good to go !!");
 
 	}
