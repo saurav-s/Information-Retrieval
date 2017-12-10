@@ -8,7 +8,7 @@ import retrieval.helper.RetrievalHelper;
 import retrieval.service.Bm25RetrievalServiceImpl;
 import retrieval.service.LuceneRetrievalServiceImpl;
 import retrieval.service.PsuedoExpansionService;
-import retrieval.service.QLRMService;
+import retrieval.service.QLRMServiceImpl;
 import retrieval.service.TermWeightIdfServiceImpl;
 import system.model.QueryModel;
 import system.model.QueryResultModel;
@@ -53,7 +53,7 @@ public class RetrievalController {
 		RetrievalHelper.printIndex(tfIdfQueryResultList, indexDir, "tfIdf_NoStem");
 
 		List<QueryResultModel> qlrmQueryList = new ArrayList<>();
-		QLRMService qlrsr = new QLRMService();
+		QLRMServiceImpl qlrsr = new QLRMServiceImpl();
 		for (QueryModel query : queryList) {
 			QueryResultModel queryResult = qlrsr.getQueryResults(query, 100);
 			qlrmQueryList.add(queryResult);
