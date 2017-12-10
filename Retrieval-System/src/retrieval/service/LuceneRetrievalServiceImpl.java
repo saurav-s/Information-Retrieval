@@ -3,6 +3,7 @@ package retrieval.service;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -21,7 +22,9 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopScoreDocCollector;
+import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
 import org.apache.lucene.store.FSDirectory;
 
 import retrieval.helper.RetrievalHelper;
@@ -87,7 +90,7 @@ public class LuceneRetrievalServiceImpl {
 				// add contents of file
 				// ===================================================
 				fr = new FileReader(f);
-				doc.add(new TextField("contents", fr));
+				doc.add(new TextField("contents", new String(Files.readAllBytes(f.toPath())), Field.Store.YES));
 				doc.add(new StringField("path", f.getPath(), Field.Store.YES));
 				doc.add(new StringField("filename", f.getName(), Field.Store.YES));
 
@@ -143,36 +146,101 @@ public class LuceneRetrievalServiceImpl {
 			writer.close();
 	}
 
-	public ScoreDoc[] getDocumentScores(QueryModel query, int resultsSize, IndexSearcher searcher)
+	public TopDocs getDocumentScores(org.apache.lucene.search.Query q, int resultsSize, IndexSearcher searcher)
 			throws ParseException, IOException, org.apache.lucene.queryparser.classic.ParseException {
 		TopScoreDocCollector collector = TopScoreDocCollector.create(resultsSize);
-		org.apache.lucene.search.Query q = new QueryParser("contents", sAnalyzer).parse(query.getQuery());
 		searcher.search(q, collector);
-		ScoreDoc[] hits = collector.topDocs().scoreDocs;
-		return hits;
+		TopDocs topDocs = collector.topDocs();
+		return topDocs;
+		//ScoreDoc[] hits = topDocs.scoreDocs;
+		
+		
+		//org.apache.lucene.search.Query q = new QueryParser("contents", sAnalyzer).parse(query.getQuery());
+
+ 
+//        for(String f : fragments)
+//        {
+//            System.out.println("Highlight:"+f);
+//        }
+
+//		
+//		SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter();
+//		try {
+//			Highlighter highlighter = new Highlighter(htmlFormatter, new QueryScorer(q));
+//		   for (int i = 0; i < topDocs.totalHits; i++) {
+//		     int id = topDocs.scoreDocs[i].doc;
+//		     Document doc = searcher.doc(id);
+//
+//		     System.out.println("Doc = "+doc.get("path") );
+//		     String text = doc.get("contents");
+//		     System.out.println("len ------ "+text);
+//		     TokenStream tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(), id, "contents", sAnalyzer);
+//		     TextFragment[] frag;
+//				frag = highlighter.getBestTextFragments(tokenStream, text, false, 10);
+//			//highlighter.getBestFragments(tokenStream, text, 3, "...");
+//		     for (int j = 0; j < frag.length; j++) {
+//		       if ((frag[j] != null) && (frag[j].getScore() > 0)) {
+//		         System.out.println("Frag notv = "+(frag[j].toString()));
+//		       }
+//		     }
+////		     //Term vector
+////		     text = doc.get("tv");
+////		     tokenStream = TokenSources.getAnyTokenStream(searcher.getIndexReader(), topDocs.scoreDocs[i].doc, "tv", sAnalyzer);
+////		     frag = highlighter.getBestTextFragments(tokenStream, text, false, 10);
+////		     for (int j = 0; j < frag.length; j++) {
+////		       if ((frag[j] != null) && (frag[j].getScore() > 0)) {
+////		         System.out.println("Frag tv = "+(frag[j].toString()));
+////		       }
+////		     }
+//		     System.out.println("-------------");
+//		   }
+//		   } catch (InvalidTokenOffsetsException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		
+        
+        
+
 	}
 
 	public QueryResultModel search(QueryModel query, String indexLocation, int resultSize)
 			throws IOException, ParseException, org.apache.lucene.queryparser.classic.ParseException {
 		IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexLocation)));
 		IndexSearcher searcher = new IndexSearcher(reader);
-		ScoreDoc[] hits = getDocumentScores(query, resultSize, searcher);
-		QueryResultModel queryResults = createQueryResultsfromScoredDocs(hits, searcher, query);
+		org.apache.lucene.search.Query q = new QueryParser("contents", sAnalyzer).parse(query.getQuery());
+		TopDocs hits = getDocumentScores(q, resultSize, searcher);
+		QueryResultModel queryResults = createQueryResultsfromScoredDocs(hits, searcher, query,q);
 		return queryResults;
 	}
 
-	public QueryResultModel createQueryResultsfromScoredDocs(ScoreDoc[] hits, IndexSearcher searcher, QueryModel query)
-			throws IOException {
+	public QueryResultModel createQueryResultsfromScoredDocs(TopDocs hits, IndexSearcher searcher, QueryModel query,
+			org.apache.lucene.search.Query q) throws IOException {
 		QueryResultModel resultModel = new QueryResultModel();
 		List<DocumentRankModel> results = new ArrayList<>();
-		System.out.println("Found " + hits.length + " hits.");
-		for (ScoreDoc scoredDoc : hits) {
+		System.out.println("Found " + hits.scoreDocs.length + " hits.");
+		UnifiedHighlighter highlighter = new UnifiedHighlighter(searcher, sAnalyzer);
+        String[] fragments = highlighter.highlight("contents", q, hits, 100 );
+        System.out.println("fragment size = "+fragments.length);
+        if(fragments.length > 0) {
+	        for (String fragement : fragments)
+	        {
+	        		System.out.println("fragments :"+fragement);
+	        }
+	     }else {
+	    	 	System.out.println("No fragment found for query "+query.getQuery()); 
+	     }
+        int i=0;
+		for (ScoreDoc scoredDoc : hits.scoreDocs) {
 			int docId = scoredDoc.doc;
 			Document d = searcher.doc(docId);
 			DocumentRankModel result = new DocumentRankModel();
 			result.setDocId(RetrievalHelper.getDocId(d.get("filename")));
 			result.setRankScore(scoredDoc.score);
+			result.setSnippet(fragments[i++]);
 			results.add(result);
+			System.out.println("res : "+result);
+			
 		}
 		resultModel.setQueryId(query.getId());
 		resultModel.setResults(results);
