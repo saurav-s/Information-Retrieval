@@ -1,4 +1,5 @@
 package retrieval.service;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +14,7 @@ public class PsuedoRelevanceModelService {
 	private QueryModel query;
 	private List<DocumentRankModel> scoredList;
 	private final Integer k = 10;
-	private final Integer toptermCount = 20;
+	private final Integer topTermCount = 20;
 
 	public QueryModel performPsuedoRelevance(QueryModel query, List<DocumentRankModel> scoredList) {
 		this.query = query;
@@ -22,13 +23,15 @@ public class PsuedoRelevanceModelService {
 		return performExpansion();
 	}
 
-	private QueryModel  performExpansion() {
-		Map<String, Double> mainMap = getTopterms(scoredList.get(0).getDocId());
+	// GIVEN:
+	// RETURNS:
+	private QueryModel performExpansion() {
+		Map<String, Double> topTerms = getTopTerms(scoredList.get(0).getDocId());
 		for (int i = 1; i < k; i++) {
-			mainMap = addtoMap(mainMap, getTopterms(scoredList.get(i).getDocId()));
+			topTerms = pickTopNFromDocs(topTerms, getTopTerms(scoredList.get(i).getDocId()));
 		}
 		StringBuffer newQuery = new StringBuffer(query.getQuery());
-		for (String term : mainMap.keySet()) {
+		for (String term : topTerms.keySet()) {
 			newQuery.append(" " + term);
 		}
 		QueryModel qrm = new QueryModel();
@@ -37,36 +40,39 @@ public class PsuedoRelevanceModelService {
 		return qrm;
 	}
 
-	private Map<String, Double> addtoMap(Map<String, Double> mainMap, Map<String, Double> topterms) {
-		for (String t : topterms.keySet()) {
+	// GIVEN:
+	// RETURNS:
+	private Map<String, Double> pickTopNFromDocs(Map<String, Double> topTermsMap, Map<String, Double> topTermForDoc) {
+		for (String t : topTermForDoc.keySet()) {
 			Integer checkMap = 0;
-			for (String term : mainMap.keySet()) {
+			for (String term : topTermsMap.keySet()) {
 				if (term.equalsIgnoreCase(t)) {
-					Double val = mainMap.get(t) > topterms.get(t) ? mainMap.get(t) : topterms.get(t);
-					mainMap.put(t, val);
+					Double val = topTermsMap.get(t) > topTermForDoc.get(t) ? topTermsMap.get(t) : topTermForDoc.get(t);
+					topTermsMap.put(t, val);
 					checkMap = 1;
 					break;
 				}
 			}
 			if (checkMap == 0) {
 				List<String> keyList = new ArrayList<>();
-				keyList.addAll(mainMap.keySet());
-				String lastKey = keyList.get(keyList.size()-1);  
-				if (topterms.get(t) > mainMap.get(lastKey)) {
-					mainMap.remove(lastKey);
-					//mainMap.get(lastKey);
-					mainMap.put(t, topterms.get(t));
+				keyList.addAll(topTermsMap.keySet());
+				String lastKey = keyList.get(keyList.size() - 1);
+				if (topTermForDoc.get(t) > topTermsMap.get(lastKey)) {
+					topTermsMap.remove(lastKey);
+					topTermsMap.put(t, topTermForDoc.get(t));
 				}
-				mainMap=RetrievalHelper.sortByValue(mainMap); 
+				topTermsMap = RetrievalHelper.sortByValue(topTermsMap);
 			}
 
 		}
-		return mainMap;
+		return topTermsMap;
 	}
 
-	private Map<String, Double> getTopterms(Integer docId) {
+	// GIVEN:
+	// RETURNS:
+	private Map<String, Double> getTopTerms(Integer docId) {
 		Map<String, Double> topTerms = new HashMap<>();
-		Map<String, Double> topTerm20 = new HashMap<>();
+		Map<String, Double> topNTerms = new HashMap<>();
 		List<DocumentTermModel> docIndex = RetrievalHelper.getTermFreqMap(docId);
 		Integer docLength = RetrievalHelper.getDocLenth(docId);
 		for (DocumentTermModel termObj : docIndex) {
@@ -78,12 +84,12 @@ public class PsuedoRelevanceModelService {
 		topTerms = RetrievalHelper.sortByValue(topTerms);
 		int count = 0;
 		for (String term : topTerms.keySet()) {
-			topTerm20.put(term, topTerms.get(term));
+			topNTerms.put(term, topTerms.get(term));
 			count++;
-			if (count == toptermCount)
+			if (count == topTermCount)
 				break;
 		}
-		return topTerm20;
+		return topNTerms;
 	}
 
 }
