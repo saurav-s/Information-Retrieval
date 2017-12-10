@@ -36,6 +36,7 @@ import system.model.DocTokenModel;
 import system.model.DocumentFrequencyModel;
 import system.model.DocumentIdMapperModel;
 import system.model.DocumentModel;
+import system.model.DocumentTermModel;
 import system.model.IndexModel;
 import system.model.TermFrequencyModel;
 import system.model.TermIndexModel;
@@ -56,6 +57,7 @@ public class DocumentHelper {
 	private static final boolean parseRelevantTextOnly = true;
 	private static Logger LOGGER = Logger.getLogger(DocumentHelper.class.getName());
 	protected static Map<Integer, String> docIdMap = new HashMap<>();
+	protected static Map<Integer, List<DocumentTermModel>> docTermFreqMap = new HashMap<>();
 	protected static Map<Integer, Integer> docLengthMap = new HashMap<>();
 	protected static Map<String, List<IndexModel>> unaryIndexMap = new HashMap<>();
 	private static Map<String, List<IndexModel>> binaryIndexMap = new HashMap<>();
@@ -346,6 +348,11 @@ public class DocumentHelper {
 		return docIdMapper;
 	}
 
+	public static String getDocName(Integer docid)
+	{
+		return docIdMap.get(docid);
+	}
+	
 	public static String getParentfileLocation(String fileLocation) {
 		// System.out.println("file location = "+fileLocation);
 		File f = new File(fileLocation);
