@@ -23,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -626,4 +627,33 @@ public class DocumentHelper {
 		return dfTable;
 	}
 
+	// GIVEN:
+	// RETURNS:
+	public void createStemmedCorpus(String readPath, String writePath) {
+		try (Stream<String> lines = Files.lines(Paths.get(readPath), Charsets.toCharset("UTF-8"))) {
+			Iterator<String> linesIt = lines.iterator();
+			StringBuffer content = new StringBuffer();
+			int docId = 0;
+			String fileName = new String();
+			while (linesIt.hasNext()) {
+				String line = linesIt.next();
+				if (line.startsWith("#")) {
+					docId = Integer.parseInt(line.split(" ")[1]);
+					fileName = "STEMMED-CACM-" + (docId - 1);
+					if (content.length() > 0) {
+						writeToCorpusFile(content.toString(), fileName, writePath);
+						System.out.println("Content written to file " + fileName);
+						content.delete(0, content.length());
+					}
+					continue;
+				} else {
+					content.append(line).append(System.lineSeparator());
+				}
+			}
+			fileName = "STEMMED-CACM-" + (docId);
+			writeToCorpusFile(content.toString(), fileName, writePath);
+		} catch (IOException e) {
+			System.err.println("DocumentHelper::createStemmedCorpus -- ErrorMessage: IOException: Invalid Path.");
+		}
+	}
 }

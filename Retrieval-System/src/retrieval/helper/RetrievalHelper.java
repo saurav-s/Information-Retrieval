@@ -51,7 +51,7 @@ public class RetrievalHelper extends DocumentHelper {
 	private static Logger LOGGER = Logger.getLogger(RetrievalHelper.class.getName());
 	// private static Map<String, List<IndexModel>> unaryIndexMap = new
 	// HashMap<>();
-	private static String ABSOLUTE_PATH = ".\\common_words.txt";
+	private static String COMMON_WORDS = ".\\common_words.txt";
 	private static double IDF_DEFAULT = 1.5;
 
 	private RetrievalHelper() {
@@ -60,10 +60,10 @@ public class RetrievalHelper extends DocumentHelper {
 
 	public static void initHelper() {
 		try {
-//			if (docIdMap.size() == 0) {
-//				initMap(fileLocation);
-//			}
-//			readUnaryIndex(indexFileLocation);
+			// if (docIdMap.size() == 0) {
+			// initMap(fileLocation);
+			// }
+			// readUnaryIndex(indexFileLocation);
 			if (docTermFreqMap.size() == 0) {
 				docTermFreqMap = getDocTermMap(unaryIndexMap);
 			}
@@ -328,25 +328,23 @@ public class RetrievalHelper extends DocumentHelper {
 		}
 
 	}
-	
-	public static void printEvaluatedFile(SystemEvaluationModel systemEvl, String fileLocation )
-	{
-		
+
+	public static void printEvaluatedFile(SystemEvaluationModel systemEvl, String fileLocation) {
+
 		for (EvaluationResultModel evlResult : systemEvl.getEvaluatedResults()) {
 			int rank = 1;
 			StringBuilder sb = new StringBuilder();
-			for(DocumentEvaluationModel docEval  :evlResult.getResults())
-			{
-				sb.append(evlResult.getQueryId()+ " Q0 ");
-				sb.append(docEval.getDocId()+" "+rank);
-				sb.append(" Percision: "+docEval.getPrecision());
-				sb.append(" Recal: "+docEval.getRecall()+" ");
+			for (DocumentEvaluationModel docEval : evlResult.getResults()) {
+				sb.append(evlResult.getQueryId() + " Q0 ");
+				sb.append(docEval.getDocId() + " " + rank);
+				sb.append(" Percision: " + docEval.getPrecision());
+				sb.append(" Recal: " + docEval.getRecall() + " ");
 				sb.append(systemEvl.getModelName() + "\n");
 				rank++;
 			}
-			writeToFile(sb.toString(), "Eval_"+systemEvl.getModelName() + "_" + evlResult.getQueryId(), fileLocation);
+			writeToFile(sb.toString(), "Eval_" + systemEvl.getModelName() + "_" + evlResult.getQueryId(), fileLocation);
 		}
-		
+
 	}
 
 	public static void writeToFile(String doc, String filename, String fileLocation) {
@@ -478,40 +476,40 @@ public class RetrievalHelper extends DocumentHelper {
 	}
 
 	// GIVEN: an absolute path of the file
-		// RETURNS: all the lines of the text file as a Set.
-		private static Set<String> parseFileContentToString() {
-			Set<String> lineSet = new HashSet<String>();
-			if (Files.isDirectory(Paths.get(RetrievalHelper.ABSOLUTE_PATH))) {
-				System.out.println("RetrievalHelper::parseFileContentToString -- Error Message: Given path of a directory. "
-						+ "Expected path of a file.");
-			} else if (FileUtils.getFile(RetrievalHelper.ABSOLUTE_PATH).getName().contains(".txt")) {
-				try {
-					List<String> lines = Files.readAllLines(Paths.get(RetrievalHelper.ABSOLUTE_PATH));
-					lineSet.addAll(lines);
-				} catch (IOException io) {
-					System.out.println("RetrievalHelper::parseFileContentToString -- Error Message: IOException.");
-				}
-			} else {
-				System.out
-						.println("RetrievalHelper::parseFileContentToString -- Error Message:Please provide a text file.");
+	// RETURNS: all the lines of the text file as a Set.
+	private static Set<String> parseFileContentToString() {
+		Set<String> lineSet = new HashSet<String>();
+		if (Files.isDirectory(Paths.get(RetrievalHelper.COMMON_WORDS))) {
+			System.out.println("RetrievalHelper::parseFileContentToString -- Error Message: Given path of a directory. "
+					+ "Expected path of a file.");
+		} else if (FileUtils.getFile(RetrievalHelper.COMMON_WORDS).getName().contains(".txt")) {
+			try {
+				List<String> lines = Files.readAllLines(Paths.get(RetrievalHelper.COMMON_WORDS));
+				lineSet.addAll(lines);
+			} catch (IOException io) {
+				System.out.println("RetrievalHelper::parseFileContentToString -- Error Message: IOException.");
 			}
-			return lineSet;
+		} else {
+			System.out
+					.println("RetrievalHelper::parseFileContentToString -- Error Message:Please provide a text file.");
 		}
+		return lineSet;
+	}
 
-		// GIVEN:
-		// RETURNS:
-		public static String removeStopWordsFromDoc(String docText) {
-			Set<String> commonWords = RetrievalHelper.parseFileContentToString();
-			StringTokenizer tokens = new StringTokenizer(docText, " ");
-			StringBuffer str = new StringBuffer();
+	// GIVEN:
+	// RETURNS:
+	public static String removeStopWordsFromDoc(String docText) {
+		Set<String> commonWords = RetrievalHelper.parseFileContentToString();
+		StringTokenizer tokens = new StringTokenizer(docText, " ");
+		StringBuffer str = new StringBuffer();
 
-			while (tokens.hasMoreTokens()) {
-				String word = tokens.nextToken();
-				if (commonWords.contains(word))
-					continue;
-				else
-					str.append(word + " ");
-			}
-			return str.toString().trim();
+		while (tokens.hasMoreTokens()) {
+			String word = tokens.nextToken();
+			if (commonWords.contains(word))
+				continue;
+			else
+				str.append(word + " ");
 		}
+		return str.toString().trim();
+	}
 }

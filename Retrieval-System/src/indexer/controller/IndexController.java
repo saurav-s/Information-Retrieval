@@ -25,28 +25,38 @@ public class IndexController {
 			LOGGER.info("Selected task type is : " + taskType);
 			switch (taskType) {
 			case "task1":
-				helper.createCorpus(documentLocation, corpusLocation, parsePunctuation, parseCaseFolding, parseStopping);
+				helper.createCorpus(documentLocation, corpusLocation, parsePunctuation, parseCaseFolding,
+						parseStopping);
 				break;
 			case "task2":
 				printTf = false;
 				printDf = false;
-				helper.indexFiles(corpusLocation, printInvertedIndex, printTf, printDf, printTokenInfo,parseStopping);
+				helper.indexFiles(corpusLocation, printInvertedIndex, printTf, printDf, printTokenInfo, parseStopping);
 				break;
 			case "task3":
-				helper.initIndexAndPrintTermTfAndDf(DocumentHelper.getParentfileLocation(corpusLocation), parseStopping);
+				helper.initIndexAndPrintTermTfAndDf(DocumentHelper.getParentfileLocation(corpusLocation),
+						parseStopping);
 				break;
 			case "all":
-				helper.createCorpus(documentLocation, corpusLocation, parsePunctuation, parseCaseFolding, parseStopping);
+				helper.createCorpus(documentLocation, corpusLocation, parsePunctuation, parseCaseFolding,
+						parseStopping);
 				helper.indexFiles(corpusLocation, printInvertedIndex, printTf, printDf, printTokenInfo, parseStopping);
 				break;
 			case "stop":
 				System.out.println("Building Stopped Corpus...");
 				parseStopping = true;
-				helper.createCorpus(documentLocation, corpusLocation, parsePunctuation, parseCaseFolding, parseStopping);
+				helper.createCorpus(documentLocation, corpusLocation, parsePunctuation, parseCaseFolding,
+						parseStopping);
+				helper.indexFiles(corpusLocation, printInvertedIndex, printTf, printDf, printTokenInfo, parseStopping);
+				break;
+			case "stem":
+				System.out.println("Reading Stemmed documents...");
+				helper.createStemmedCorpus(documentLocation, corpusLocation);
 				helper.indexFiles(corpusLocation, printInvertedIndex, printTf, printDf, printTokenInfo, parseStopping);
 				break;
 			default:
-				helper.createCorpus(documentLocation, corpusLocation, parsePunctuation, parseCaseFolding, parseStopping);
+				helper.createCorpus(documentLocation, corpusLocation, parsePunctuation, parseCaseFolding,
+						parseStopping);
 				helper.indexFiles(corpusLocation, printInvertedIndex, printTf, printDf, printTokenInfo, parseStopping);
 				break;
 			}
