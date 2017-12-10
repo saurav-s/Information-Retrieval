@@ -379,7 +379,7 @@ public class RetrievalHelper extends DocumentHelper {
 		if (RetrievalHelper.getInvertedIndex(word) != null) {
 			double noOfdocs = RetrievalHelper.getInvertedIndex(word).size();
 			double totalDocs = RetrievalHelper.getCollectionSize();
-			return Math.log((noOfdocs) / (totalDocs));
+			return Math.log((1 + totalDocs) / (1 + noOfdocs));
 		} else {
 			return IDF_DEFAULT;
 		}
