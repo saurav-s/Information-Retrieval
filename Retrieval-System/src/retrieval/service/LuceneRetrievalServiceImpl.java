@@ -52,7 +52,7 @@ public class LuceneRetrievalServiceImpl {
 
 		writer = new IndexWriter(dir, config);
 
-		RetrievalHelper.initHelper(corpusDir, indexFileLocation);
+		RetrievalHelper.initHelper();
 
 	}
 

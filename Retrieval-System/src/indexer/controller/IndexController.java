@@ -8,6 +8,7 @@ public class IndexController {
 	private static Logger LOGGER = Logger.getLogger(IndexController.class.getName());
 	private static String documentLocation = "";
 	private static String corpusLocation = "";
+	private static boolean parseStopping = false;
 	private static boolean parsePunctuation = true;
 	private static boolean parseCaseFolding = true;
 	private static boolean printInvertedIndex = true;
@@ -24,23 +25,29 @@ public class IndexController {
 			LOGGER.info("Selected task type is : " + taskType);
 			switch (taskType) {
 			case "task1":
-				helper.createCorpus(documentLocation, corpusLocation, parsePunctuation, parseCaseFolding);
+				helper.createCorpus(documentLocation, corpusLocation, parsePunctuation, parseCaseFolding, parseStopping);
 				break;
 			case "task2":
 				printTf = false;
 				printDf = false;
-				helper.indexFiles(corpusLocation, printInvertedIndex, printTf, printDf, printTokenInfo);
+				helper.indexFiles(corpusLocation, printInvertedIndex, printTf, printDf, printTokenInfo,parseStopping);
 				break;
 			case "task3":
-				helper.initIndexAndPrintTermTfAndDf(DocumentHelper.getParentfileLocation(corpusLocation));
+				helper.initIndexAndPrintTermTfAndDf(DocumentHelper.getParentfileLocation(corpusLocation), parseStopping);
 				break;
 			case "all":
-				helper.createCorpus(documentLocation, corpusLocation, parsePunctuation, parseCaseFolding);
-				helper.indexFiles(corpusLocation, printInvertedIndex, printTf, printDf, printTokenInfo);
+				helper.createCorpus(documentLocation, corpusLocation, parsePunctuation, parseCaseFolding, parseStopping);
+				helper.indexFiles(corpusLocation, printInvertedIndex, printTf, printDf, printTokenInfo, parseStopping);
+				break;
+			case "stop":
+				System.out.println("Building Stopped Corpus...");
+				parseStopping = true;
+				helper.createCorpus(documentLocation, corpusLocation, parsePunctuation, parseCaseFolding, parseStopping);
+				helper.indexFiles(corpusLocation, printInvertedIndex, printTf, printDf, printTokenInfo, parseStopping);
 				break;
 			default:
-				helper.createCorpus(documentLocation, corpusLocation, parsePunctuation, parseCaseFolding);
-				helper.indexFiles(corpusLocation, printInvertedIndex, printTf, printDf, printTokenInfo);
+				helper.createCorpus(documentLocation, corpusLocation, parsePunctuation, parseCaseFolding, parseStopping);
+				helper.indexFiles(corpusLocation, printInvertedIndex, printTf, printDf, printTokenInfo, parseStopping);
 				break;
 			}
 			LOGGER.info("I am done");
@@ -59,6 +66,7 @@ public class IndexController {
 		}
 		if (args.length >= 2) {
 			taskType = args[1];
+			System.out.println("Task Type: ");
 			LOGGER.info("task type is set to:" + taskType);
 		}
 		if (args.length >= 3) {

@@ -31,11 +31,11 @@ import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
+import retrieval.helper.RetrievalHelper;
 import system.model.DocTokenInfoModel;
 import system.model.DocTokenModel;
 import system.model.DocumentFrequencyModel;
 import system.model.DocumentIdMapperModel;
-import system.model.DocumentModel;
 import system.model.DocumentTermModel;
 import system.model.IndexModel;
 import system.model.TermFrequencyModel;
@@ -96,21 +96,21 @@ public class DocumentHelper {
 		return getDocument(fileLocation, "");
 	}
 
-	public List<DocumentModel> createCorpus(String docLocation, String corpusLocation, String baseUrl,
-			boolean parsePunctuation, boolean parseCaseFolding) {
-		LOGGER.info("trying to create corpus, fetching files from " + docLocation + "\ncreating corpus at"
+	// GIVEN:
+	// RETURNS:
+	public void createCorpus(String docLocation, String corpusLocation, String baseUrl, boolean parsePunctuation,
+			boolean parseCaseFolding, boolean parseStopping) {
+		LOGGER.info("trying to create corpus, fetching files from " + docLocation + "\ncreating corpus at "
 				+ corpusLocation);
-		List<DocumentModel> docList = new ArrayList<>();
 		Path path = Paths.get(docLocation);
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
 			for (Path entry : stream) {
 				File file = entry.toFile();
-				String fileExtension = getFileExtension(file);
-				String fileName = getFileName(file);
-				if (file.isFile() && ((fileExtension.equals("html")) || (fileExtension.equals("txt")))) {
+				if (file.isFile()
+						&& ((getFileExtension(file).equals("html")) || (getFileExtension(file).equals("txt")))) {
 					String parsedDoc = parse(getDocument(entry.toAbsolutePath().toString(), baseUrl), parsePunctuation,
-							parseCaseFolding);
-					writeToCorpusFile(parsedDoc, fileName, corpusLocation);
+							parseCaseFolding, parseStopping);
+					writeToCorpusFile(parsedDoc, getFileName(file), corpusLocation);
 				} else {
 					LOGGER.info("this is intresting, i was only told to read txt files :( ");
 				}
@@ -122,13 +122,13 @@ public class DocumentHelper {
 			e.printStackTrace();
 		}
 		// LOGGER.info("Returning Documents =" + docList.size());
-		return docList;
 	}
 
 	private String getFileName(File file) {
 		String name = file.getName();
 		try {
-			// System.out.println("extension =" + name.substring(name.lastIndexOf(".") +
+			// System.out.println("extension =" +
+			// name.substring(name.lastIndexOf(".") +
 			// 1));
 			// return name.substring(name.lastIndexOf(".") + 1);
 			return name.substring(0, name.lastIndexOf("."));
@@ -137,9 +137,12 @@ public class DocumentHelper {
 		}
 	}
 
-	public List<DocumentModel> createCorpus(String documentLocation, String corpusLocation, boolean parsePunctuation,
-			boolean parseCaseFoling) {
-		return createCorpus(documentLocation, corpusLocation, "", parsePunctuation, parseCaseFoling);
+	// GIVEN:
+	// WHERE:
+	// RETURNS:
+	public void createCorpus(String documentLocation, String corpusLocation, boolean parsePunctuation,
+			boolean parseCaseFolding, boolean parseStopping) {
+		createCorpus(documentLocation, corpusLocation, "", parsePunctuation, parseCaseFolding, parseStopping);
 	}
 
 	public static String getRelevantText(String documentText) {
@@ -163,7 +166,7 @@ public class DocumentHelper {
 		if (parseRelevantTextOnly) {
 			whiteSpaceCleanedDocument = getRelevantText(whiteSpaceCleanedDocument);
 		}
-		//LOGGER.info("\n\nDoctext = \t" + whiteSpaceCleanedDocument);
+		// LOGGER.info("\n\nDoctext = \t" + whiteSpaceCleanedDocument);
 		return whiteSpaceCleanedDocument;
 
 	}
@@ -180,13 +183,14 @@ public class DocumentHelper {
 			String digitCleanedString = digitMatcher.replaceAll("");
 			str.append(digitCleanedString + " ");
 		}
-		// LOGGER.info("before updating= \n" + whiteSpaceCleanedDocument + "\nupdated
+		// LOGGER.info("before updating= \n" + whiteSpaceCleanedDocument +
+		// "\nupdated
 		// string = \n" + str.toString());
 		return str.toString();
 	}
 
 	public void indexFiles(String indexedFileLocation, boolean printInvertedIndex, boolean printTermFrequency,
-			boolean printDocumentFrequency, boolean printDocTokenInfo) throws Exception {
+			boolean printDocumentFrequency, boolean printDocTokenInfo, boolean stopping) throws Exception {
 		LOGGER.info("trying to index files, fetching corpus from location " + indexedFileLocation);
 		initMap(indexedFileLocation);
 		Path path = Paths.get(indexedFileLocation);
@@ -196,7 +200,8 @@ public class DocumentHelper {
 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
 			for (Path entry : stream) {
-				// LOGGER.info("File name found is:" + entry.getFileName().toString());
+				// LOGGER.info("File name found is:" +
+				// entry.getFileName().toString());
 				if (entry.toFile().isFile() && (getFileExtension(entry.toFile()).equals("txt"))) {
 					try (Stream<String> fileStream = Files.lines(entry)) {
 						Integer docId = getDocId(entry.getFileName().toString());
@@ -217,8 +222,7 @@ public class DocumentHelper {
 				}
 			}
 			printData(indexedFileLocation, printInvertedIndex, printTermFrequency, printDocumentFrequency,
-					printDocTokenInfo);
-
+					printDocTokenInfo, stopping);
 		}
 	}
 
@@ -248,61 +252,87 @@ public class DocumentHelper {
 	}
 
 	private void printData(String indexedFileLocation, boolean printInvertedIndex, boolean printTermFrequency,
-			boolean printDocumentFrequency, boolean printDocTokenInfo) {
+			boolean printDocumentFrequency, boolean printDocTokenInfo, boolean stopping) {
+
 		if (printInvertedIndex) {
-			printInvertedIndex(indexedFileLocation);
+			printInvertedIndex(indexedFileLocation, stopping);
 		}
 		if (printTermFrequency) {
-			printTermFrequency(getParentfileLocation(indexedFileLocation));
+			printTermFrequency(getParentfileLocation(indexedFileLocation), stopping);
 		}
 		if (printDocumentFrequency) {
-			printDocumentFrequency(getParentfileLocation(indexedFileLocation));
+			printDocumentFrequency(getParentfileLocation(indexedFileLocation), stopping);
 		}
 		if (printDocTokenInfo) {
-			printDocTokenInfo(getParentfileLocation(indexedFileLocation));
+			printDocTokenInfo(getParentfileLocation(indexedFileLocation), stopping);
 		}
 	}
 
-	private void printDocTokenInfo(String fileLocation) {
-		PrintTablesToFile(docTokenList, fileLocation, "Document_Token_Count.json");
+	private void printDocTokenInfo(String fileLocation, boolean stopping) {
+		if (stopping) {
+			PrintTablesToFile(docTokenList, fileLocation, "Stopped_Document_Token_Count.json");
+		} else {
+			PrintTablesToFile(docTokenList, fileLocation, "Document_Token_Count.json");
+		}
+
 	}
 
-	private void printInvertedIndex(String indexedFileLocation) {
-		PrintIndexToFile(unaryIndexMap, getParentfileLocation(indexedFileLocation), "Unary_Index.json");
-		PrintIndexToFile(binaryIndexMap, getParentfileLocation(indexedFileLocation), "Binary_Index.json");
-		PrintIndexToFile(ternaryIndexMap, getParentfileLocation(indexedFileLocation), "Ternary_Index.json");
+	private void printInvertedIndex(String indexedFileLocation, boolean stopping) {
+		if (stopping) {
+			PrintIndexToFile(unaryIndexMap, getParentfileLocation(indexedFileLocation), "Stopped_Unary_Index.json");
+			PrintIndexToFile(binaryIndexMap, getParentfileLocation(indexedFileLocation), "Stopped_Binary_Index.json");
+			PrintIndexToFile(ternaryIndexMap, getParentfileLocation(indexedFileLocation), "Stopped_Ternary_Index.json");
+		} else {
+			PrintIndexToFile(unaryIndexMap, getParentfileLocation(indexedFileLocation), "Unary_Index.json");
+			PrintIndexToFile(binaryIndexMap, getParentfileLocation(indexedFileLocation), "Binary_Index.json");
+			PrintIndexToFile(ternaryIndexMap, getParentfileLocation(indexedFileLocation), "Ternary_Index.json");
+		}
+
 	}
 
-	public void initIndexAndPrintTermTfAndDf(String indexedFileLocation) throws IOException {
+	public void initIndexAndPrintTermTfAndDf(String indexedFileLocation, boolean stopping) throws IOException {
 		try {
 			LOGGER.info("trying to read index files, fetching files from " + indexedFileLocation);
 			unaryIndexMap = readJsonStream(indexedFileLocation, "Unary_Index.json");
 			binaryIndexMap = readJsonStream(indexedFileLocation, "Binary_Index.json");
 			ternaryIndexMap = readJsonStream(indexedFileLocation, "Ternary_Index.json");
-			printTermFrequency(indexedFileLocation);
-			printDocumentFrequency(indexedFileLocation);
+			printTermFrequency(indexedFileLocation, stopping);
+			printDocumentFrequency(indexedFileLocation, stopping);
 		} catch (IOException e) {
 			LOGGER.severe("\nError while reading files: " + e.getMessage());
 			throw e;
 		}
 	}
 
-	private void printTermFrequency(String fileLocation) {
-		PrintTablesToFile(getTermFrequencyTable(unaryIndexMap), fileLocation, "Unary_Tf.json");
-		PrintTablesToFile(getTermFrequencyTable(binaryIndexMap), fileLocation, "Binary_Tf.json");
-		PrintTablesToFile(getTermFrequencyTable(ternaryIndexMap), fileLocation, "Ternary_Tf.json");
+	private void printTermFrequency(String fileLocation, boolean stopping) {
+		if (stopping) {
+			PrintTablesToFile(getTermFrequencyTable(unaryIndexMap), fileLocation, "Stopped_Unary_Tf.json");
+			PrintTablesToFile(getTermFrequencyTable(binaryIndexMap), fileLocation, "Stopped_Binary_Tf.json");
+			PrintTablesToFile(getTermFrequencyTable(ternaryIndexMap), fileLocation, "Stopped_Ternary_Tf.json");
+		} else {
+			PrintTablesToFile(getTermFrequencyTable(unaryIndexMap), fileLocation, "Unary_Tf.json");
+			PrintTablesToFile(getTermFrequencyTable(binaryIndexMap), fileLocation, "Binary_Tf.json");
+			PrintTablesToFile(getTermFrequencyTable(ternaryIndexMap), fileLocation, "Ternary_Tf.json");
+		}
 	}
 
-	private void printDocumentFrequency(String fileLocation) {
-		PrintTablesToFile(getDocumentFrequencyMap(unaryIndexMap), fileLocation, "Unary_Df.json");
-		PrintTablesToFile(getDocumentFrequencyMap(binaryIndexMap), fileLocation, "Binary_Df.json");
-		PrintTablesToFile(getDocumentFrequencyMap(ternaryIndexMap), fileLocation, "Ternary_Df.json");
+	private void printDocumentFrequency(String fileLocation, boolean stopping) {
+		if (stopping) {
+			PrintTablesToFile(getDocumentFrequencyMap(unaryIndexMap), fileLocation, "Stopped_Unary_Df.json");
+			PrintTablesToFile(getDocumentFrequencyMap(binaryIndexMap), fileLocation, "Stopped_Binary_Df.json");
+			PrintTablesToFile(getDocumentFrequencyMap(ternaryIndexMap), fileLocation, "Stopped_Ternary_Df.json");
+		} else {
+			PrintTablesToFile(getDocumentFrequencyMap(unaryIndexMap), fileLocation, "Unary_Df.json");
+			PrintTablesToFile(getDocumentFrequencyMap(binaryIndexMap), fileLocation, "Binary_Df.json");
+			PrintTablesToFile(getDocumentFrequencyMap(ternaryIndexMap), fileLocation, "Ternary_Df.json");
+		}
 	}
 
 	private String getFileExtension(File file) {
 		String name = file.getName();
 		try {
-			// System.out.println("extension =" + name.substring(name.lastIndexOf(".") +
+			// System.out.println("extension =" +
+			// name.substring(name.lastIndexOf(".") +
 			// 1));
 			return name.substring(name.lastIndexOf(".") + 1);
 		} catch (Exception e) {
@@ -348,11 +378,10 @@ public class DocumentHelper {
 		return docIdMapper;
 	}
 
-	public static String getDocName(Integer docid)
-	{
+	public static String getDocName(Integer docid) {
 		return docIdMap.get(docid);
 	}
-	
+
 	public static String getParentfileLocation(String fileLocation) {
 		// System.out.println("file location = "+fileLocation);
 		File f = new File(fileLocation);
@@ -407,7 +436,8 @@ public class DocumentHelper {
 
 	private static <T> void PrintTablesToFile(List<T> table, String fileLocation, String fileName) {
 		try {
-			// LOGGER.info("Printing table" + fileName + "\tTotal number of unique words = "
+			// LOGGER.info("Printing table" + fileName + "\tTotal number of
+			// unique words = "
 			// + table.size());
 			writeJsonStream(fileLocation, fileName, table);
 		} catch (Exception e) {
@@ -449,7 +479,8 @@ public class DocumentHelper {
 			while (reader.hasNext()) {
 
 				TermIndexModel termIndex = gson.fromJson(reader, TermIndexModel.class);
-				// LOGGER.info(""+termIndex.getTerm()+"\t "+termIndex.getInvertedList());
+				// LOGGER.info(""+termIndex.getTerm()+"\t
+				// "+termIndex.getInvertedList());
 				indexMap.put(termIndex.getTerm(), termIndex.getInvertedList());
 			}
 			reader.endArray();
@@ -517,7 +548,8 @@ public class DocumentHelper {
 					}
 				}
 			} else {
-				// LOGGER.warning("doc not present adding new and updating list");
+				// LOGGER.warning("doc not present adding new and updating
+				// list");
 				IndexModel indexModel = new IndexModel();
 				indexModel.setDocId(docId);
 				indexModel.setTf(1);
@@ -537,7 +569,9 @@ public class DocumentHelper {
 		return documentText.toLowerCase();
 	}
 
-	public String parse(Document doc, boolean parsePunctuation, boolean parseCaseFolding) {
+	// GIVEN:
+	// RETURNS:
+	public String parse(Document doc, boolean parsePunctuation, boolean parseCaseFolding, boolean parseStopping) {
 		String documentText = parseDocumentText(doc);
 		if (parsePunctuation) {
 			documentText = parsePunctuation(documentText);
@@ -545,7 +579,17 @@ public class DocumentHelper {
 		if (parseCaseFolding) {
 			documentText = parseCaseFolding(documentText);
 		}
+		if (parseStopping) {
+			documentText = parseStopping(documentText);
+		}
 		return documentText;
+	}
+
+	// GIVEN:
+	// RETURNS:
+	private String parseStopping(String documentText) {
+		String stopWords = RetrievalHelper.removeStopWordsFromDoc(documentText);
+		return stopWords;
 	}
 
 	private List<TermFrequencyModel> getTermFrequencyTable(Map<String, List<IndexModel>> indexMap) {
