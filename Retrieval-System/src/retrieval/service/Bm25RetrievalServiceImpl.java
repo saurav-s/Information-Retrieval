@@ -115,7 +115,7 @@ public class Bm25RetrievalServiceImpl {
 		Collections.sort(scoreList);
 		resultModel.setQueryId(query.getId());
 		if (resultSize != null) {
-			List<DocumentRankModel> topRankedDocs = getTopNResults(scoreList, resultSize);
+			List<DocumentRankModel> topRankedDocs = RetrievalHelper.getTopNResults(scoreList, resultSize);
 			resultModel.setResults(topRankedDocs);
 		} else {
 			resultModel.setResults(scoreList);
@@ -126,23 +126,6 @@ public class Bm25RetrievalServiceImpl {
 
 	public QueryResultModel getQueryResults(final QueryModel query) throws IOException {
 		return getQueryResults(query, null);
-	}
-
-	/**
-	 * 
-	 * Expects list in a sorted order
-	 * 
-	 * @param result
-	 */
-	private List<DocumentRankModel> getTopNResults(List<DocumentRankModel> results, int n) {
-		List<DocumentRankModel> topResults = new ArrayList<>();
-		for (DocumentRankModel result : results) {
-			if (topResults.size() < n)
-				topResults.add(result);
-			else
-				break;
-		}
-		return topResults;
 	}
 
 	/**

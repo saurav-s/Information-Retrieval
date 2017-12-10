@@ -7,6 +7,8 @@ import indexer.controller.IndexController;
 import retrieval.helper.RetrievalHelper;
 import retrieval.service.Bm25RetrievalServiceImpl;
 import retrieval.service.LuceneRetrievalServiceImpl;
+import retrieval.service.PsuedoExpansionService;
+import retrieval.service.QLRMService;
 import retrieval.service.TermWeightIdfServiceImpl;
 import system.model.QueryModel;
 import system.model.QueryResultModel;
@@ -32,8 +34,6 @@ public class RetrievalController {
 			QueryResultModel queryResult = retrievalService.search(query, indexDir, 100);
 			luceneQueryResultList.add(queryResult);
 		}
-		// RetrievalHelper.writeToJsonStream(indexDir,
-		// "Lucene_Query_Results.json", luceneQueryResultList);
 		RetrievalHelper.printIndex(luceneQueryResultList, indexDir, "lucene_NoStem", true);
 
 		List<QueryResultModel> bm25QueryResultList = new ArrayList<>();
@@ -42,8 +42,6 @@ public class RetrievalController {
 			QueryResultModel queryResult = bm25RetrievalService.getQueryResults(query, 100);
 			bm25QueryResultList.add(queryResult);
 		}
-		// RetrievalHelper.writeToJsonStream(indexDir,
-		// "Bm25_Query_Results.json", bm25QueryResultList);
 		RetrievalHelper.printIndex(bm25QueryResultList, indexDir, "bm25_NoStem");
 
 		TermWeightIdfServiceImpl idfService = new TermWeightIdfServiceImpl();
@@ -53,6 +51,22 @@ public class RetrievalController {
 			tfIdfQueryResultList.add(tfIdf);
 		}
 		RetrievalHelper.printIndex(tfIdfQueryResultList, indexDir, "tfIdf_NoStem");
+
+		List<QueryResultModel> qlrmQueryList = new ArrayList<>();
+		QLRMService qlrsr = new QLRMService();
+		for (QueryModel query : queryList) {
+			QueryResultModel queryResult = qlrsr.getQueryResults(query, 100);
+			qlrmQueryList.add(queryResult);
+		}
+		RetrievalHelper.printIndex(qlrmQueryList, indexDir, "QLR_NoStem");
+
+		List<QueryResultModel> psuedoExpandedList = new ArrayList<>();
+		PsuedoExpansionService psuedoRel = new PsuedoExpansionService();
+		for (QueryModel query : queryList) {
+			QueryResultModel pusedoQuery = psuedoRel.performQueryExpandsion(query, "TF", 100);
+			psuedoExpandedList.add(pusedoQuery);
+		}
+		RetrievalHelper.printIndex(psuedoExpandedList, indexDir, "PSUEDO_TFIdf_NoStem");
 		System.out.println("We are good to go !!");
 
 	}

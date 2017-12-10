@@ -271,25 +271,13 @@ public class DocumentHelper {
 	}
 
 	private void printDocTokenInfo(String fileLocation, boolean stopping) {
-		if (stopping) {
-			PrintTablesToFile(docTokenList, fileLocation, "Stopped_Document_Token_Count.json");
-		} else {
-			PrintTablesToFile(docTokenList, fileLocation, "Document_Token_Count.json");
-		}
-
+		PrintTablesToFile(docTokenList, fileLocation, "Document_Token_Count.json");
 	}
 
 	private void printInvertedIndex(String indexedFileLocation, boolean stopping) {
-		if (stopping) {
-			PrintIndexToFile(unaryIndexMap, getParentfileLocation(indexedFileLocation), "Stopped_Unary_Index.json");
-			PrintIndexToFile(binaryIndexMap, getParentfileLocation(indexedFileLocation), "Stopped_Binary_Index.json");
-			PrintIndexToFile(ternaryIndexMap, getParentfileLocation(indexedFileLocation), "Stopped_Ternary_Index.json");
-		} else {
-			PrintIndexToFile(unaryIndexMap, getParentfileLocation(indexedFileLocation), "Unary_Index.json");
-			PrintIndexToFile(binaryIndexMap, getParentfileLocation(indexedFileLocation), "Binary_Index.json");
-			PrintIndexToFile(ternaryIndexMap, getParentfileLocation(indexedFileLocation), "Ternary_Index.json");
-		}
-
+		PrintIndexToFile(unaryIndexMap, getParentfileLocation(indexedFileLocation), "Unary_Index.json");
+		PrintIndexToFile(binaryIndexMap, getParentfileLocation(indexedFileLocation), "Binary_Index.json");
+		PrintIndexToFile(ternaryIndexMap, getParentfileLocation(indexedFileLocation), "Ternary_Index.json");
 	}
 
 	public void initIndexAndPrintTermTfAndDf(String indexedFileLocation, boolean stopping) throws IOException {
@@ -307,27 +295,17 @@ public class DocumentHelper {
 	}
 
 	private void printTermFrequency(String fileLocation, boolean stopping) {
-		if (stopping) {
-			PrintTablesToFile(getTermFrequencyTable(unaryIndexMap), fileLocation, "Stopped_Unary_Tf.json");
-			PrintTablesToFile(getTermFrequencyTable(binaryIndexMap), fileLocation, "Stopped_Binary_Tf.json");
-			PrintTablesToFile(getTermFrequencyTable(ternaryIndexMap), fileLocation, "Stopped_Ternary_Tf.json");
-		} else {
-			PrintTablesToFile(getTermFrequencyTable(unaryIndexMap), fileLocation, "Unary_Tf.json");
-			PrintTablesToFile(getTermFrequencyTable(binaryIndexMap), fileLocation, "Binary_Tf.json");
-			PrintTablesToFile(getTermFrequencyTable(ternaryIndexMap), fileLocation, "Ternary_Tf.json");
-		}
+
+		PrintTablesToFile(getTermFrequencyTable(unaryIndexMap), fileLocation, "Unary_Tf.json");
+		PrintTablesToFile(getTermFrequencyTable(binaryIndexMap), fileLocation, "Binary_Tf.json");
+		PrintTablesToFile(getTermFrequencyTable(ternaryIndexMap), fileLocation, "Ternary_Tf.json");
 	}
 
 	private void printDocumentFrequency(String fileLocation, boolean stopping) {
-		if (stopping) {
-			PrintTablesToFile(getDocumentFrequencyMap(unaryIndexMap), fileLocation, "Stopped_Unary_Df.json");
-			PrintTablesToFile(getDocumentFrequencyMap(binaryIndexMap), fileLocation, "Stopped_Binary_Df.json");
-			PrintTablesToFile(getDocumentFrequencyMap(ternaryIndexMap), fileLocation, "Stopped_Ternary_Df.json");
-		} else {
-			PrintTablesToFile(getDocumentFrequencyMap(unaryIndexMap), fileLocation, "Unary_Df.json");
-			PrintTablesToFile(getDocumentFrequencyMap(binaryIndexMap), fileLocation, "Binary_Df.json");
-			PrintTablesToFile(getDocumentFrequencyMap(ternaryIndexMap), fileLocation, "Ternary_Df.json");
-		}
+
+		PrintTablesToFile(getDocumentFrequencyMap(unaryIndexMap), fileLocation, "Unary_Df.json");
+		PrintTablesToFile(getDocumentFrequencyMap(binaryIndexMap), fileLocation, "Binary_Df.json");
+		PrintTablesToFile(getDocumentFrequencyMap(ternaryIndexMap), fileLocation, "Ternary_Df.json");
 	}
 
 	private String getFileExtension(File file) {
@@ -686,6 +664,14 @@ public class DocumentHelper {
 			System.err.println("DocumentHelper::getQueryRelevanceMap -- ErrorMessage: IOException: Invalid Path.");
 		}
 		return map;
+	}
+
+	public static void main(String[] args) {
+		DocumentHelper docHelper = new DocumentHelper();
+		System.out.println("Reading....");
+		String readPath = "C:\\Users\\rahul\\Desktop\\Information-Retrieval\\cacm_stem.txt";
+		String writePath = ".\\Information-Retrieval\\stemmedCorpus\\";
+		docHelper.createStemmedCorpus(readPath, writePath);
 	}
 
 }

@@ -27,7 +27,7 @@ public class TermWeightIdfServiceImpl implements RetrievalService {
 		}
 		Collections.sort(drmList);
 		qr.setQueryId(query.getId());
-		qr.setResults(drmList);
+		qr.setResults(RetrievalHelper.getTopNResults(drmList, size));
 		return qr;
 	}
 
