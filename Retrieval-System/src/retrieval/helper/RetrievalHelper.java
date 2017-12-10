@@ -381,6 +381,7 @@ public class RetrievalHelper extends DocumentHelper {
 	}
 
 
+
 	public static void writeToFile(String doc, String filename, String fileLocation) {
 		BufferedWriter writer = null;
 		try {
