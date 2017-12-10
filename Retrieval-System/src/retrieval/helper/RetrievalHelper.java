@@ -317,6 +317,17 @@ public class RetrievalHelper extends DocumentHelper {
 	 * @param resultType
 	 */
 	public static void printIndex(List<QueryResultModel> queryResult, String fileLocation, String resultType) {
+		printIndex(queryResult,fileLocation,resultType,false);
+	}
+	/**
+	 * 
+	 * @param queryResult
+	 * @param filename
+	 * @param fileLocation
+	 * @param resultType
+	 * @param printSnippet
+	 */
+	public static void printIndex(List<QueryResultModel> queryResult, String fileLocation, String resultType, boolean printSnippet) {
 
 		// query_id Q0 doc_id rank BM25_score system_name
 
@@ -327,7 +338,12 @@ public class RetrievalHelper extends DocumentHelper {
 				sb.append(model.getQueryId() + " Q0 ");
 				sb.append(docIdMap.get(docRankModel.getDocId()) + " ");
 				sb.append(rank + " " + docRankModel.getRankScore() + " ");
-				sb.append(resultType + "\n");
+				sb.append(resultType);
+				sb.append("\n");
+				if(printSnippet) {
+					sb.append(docRankModel.getSnippet());
+					sb.append("\n\n");
+				}
 				rank++;
 			}
 			writeToFile(sb.toString(), resultType + "_" + model.getQueryId(), fileLocation);
@@ -519,10 +535,11 @@ public class RetrievalHelper extends DocumentHelper {
 		return str.toString().trim();
 	}
 
-	public static Map<Integer, String> parseQueriesFromXML() {
-		Map<Integer, String> map = new HashMap<>();
-		try (Stream<String> lines = Files.lines(
-				Paths.get(RetrievalHelper.CACM_RAW_QUERIES),
+	// GIVEN:
+	// RETURNS:
+	public static List<QueryModel> parseQueriesFromXML() {
+		List<QueryModel> queryList = new ArrayList<>();
+		try (Stream<String> lines = Files.lines(Paths.get(RetrievalHelper.CACM_RAW_QUERIES),
 				Charsets.toCharset("UTF-8"))) {
 			StringBuffer sb = new StringBuffer();
 			lines.forEach((l) -> {
@@ -532,11 +549,14 @@ public class RetrievalHelper extends DocumentHelper {
 			for (Element element : docs) {
 				int queryId = Integer.parseInt(element.select("DOCNO").text());
 				String query = element.ownText();
-				map.put(queryId, query);
+				QueryModel queryModel = new QueryModel();
+				queryModel.setId(queryId);
+				queryModel.setQuery(query);
+				queryList.add(queryModel);
 			}
 		} catch (IOException io) {
-			System.out.println("IO Exception");
+			System.out.println("RetrievalHelper::parseQueriesFromXML -- ErrorMessage:IO Exception -- Invalid Path");
 		}
-		return map;
+		return queryList;
 	}
 }
