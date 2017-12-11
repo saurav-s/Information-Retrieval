@@ -15,13 +15,14 @@ import system.model.QueryResultModel;
 
 public class Bm25RetrievalServiceImpl {
 
-//	/**
-//	 * @param corpusLocation
-//	 *            :corpusLocation
-//	 */
-//	public Bm25RetrievalServiceImpl(String corpusLocation, String indexFileLocation) {
-//		RetrievalHelper.initHelper(corpusLocation, indexFileLocation);
-//	}
+	// /**
+	// * @param corpusLocation
+	// * :corpusLocation
+	// */
+	// public Bm25RetrievalServiceImpl(String corpusLocation, String
+	// indexFileLocation) {
+	// RetrievalHelper.initHelper(corpusLocation, indexFileLocation);
+	// }
 
 	// k1, k2 are constants,
 	// q is the wqf, the within query frequency,
@@ -120,7 +121,6 @@ public class Bm25RetrievalServiceImpl {
 		} else {
 			resultModel.setResults(scoreList);
 		}
-		System.out.println("For Query : " + query.getQuery() + " results" + resultModel);
 		return resultModel;
 	}
 
@@ -161,8 +161,6 @@ public class Bm25RetrievalServiceImpl {
 		for (String term : queryTerms) {
 			score += computeBm25ScoreForTerm(queryTerms, term, docId);
 		}
-		// System.out.println("Calculated total bm25 score for doc" + docId +
-		// "\t Score = " + score);
 		return score;
 	}
 

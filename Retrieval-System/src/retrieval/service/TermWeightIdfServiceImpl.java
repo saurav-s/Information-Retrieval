@@ -22,7 +22,7 @@ public class TermWeightIdfServiceImpl implements RetrievalService {
 			DocumentRankModel drm = new DocumentRankModel();
 			drm.setDocId(indexModel.getDocId());
 			drm.setRankScore(fetchTfIdfProduct(queryWords, indexModel));
-			System.out.println(drm.getDocId()+" : "+drm.getRankScore());
+			//System.out.println(drm.getDocId()+" : "+drm.getRankScore());
 			drmList.add(drm);
 		}
 		Collections.sort(drmList);

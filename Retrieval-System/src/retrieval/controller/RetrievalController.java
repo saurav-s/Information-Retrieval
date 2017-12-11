@@ -18,11 +18,16 @@ import system.model.SystemEvaluationModel;
 public class RetrievalController {
 	public static void main(String[] args) throws Exception {
 
+		// indexDir : New Index Will be Generated here.
+		// corpusLocation: location of the corpus.
+		// indexFileLocation: Lucene's index location
+		// rawDocDirectory: directory of raw documents
+		// resultDir : output of the tasks will be printed there.
 		String indexDir = args[0];
 		String corpusLocation = args[1];
 		String indexFileLocation = args[2];
-		String queryFileLocation = args[3];
-		String rawDocDirectory = args[4];
+		String rawDocDirectory = args[3];
+		String resultDir = args[4];
 		String[] indexArgs = { rawDocDirectory };
 		IndexController.main(indexArgs);
 		RetrievalHelper.initHelper();
@@ -30,13 +35,14 @@ public class RetrievalController {
 				corpusLocation, indexFileLocation);
 
 		retrievalService.indexFiles(indexDir, corpusLocation);
-		List<system.model.QueryModel> queryList = RetrievalHelper.getQueryList(queryFileLocation);
+		List<system.model.QueryModel> queryList = RetrievalHelper.parseQueriesFromXML();
 		List<system.model.QueryResultModel> luceneQueryResultList = new ArrayList<>();
 		for (QueryModel query : queryList) {
 			QueryResultModel queryResult = retrievalService.search(query, indexDir, 100);
 			luceneQueryResultList.add(queryResult);
 		}
-		RetrievalHelper.printIndex(luceneQueryResultList, indexDir, "lucene_NoStem", true);
+		RetrievalHelper.printIndex(luceneQueryResultList, resultDir, "lucene", false);
+		RetrievalHelper.printIndex(luceneQueryResultList, resultDir, "luceneWithSnippet", true);
 
 		List<QueryResultModel> bm25QueryResultList = new ArrayList<>();
 		Bm25RetrievalServiceImpl bm25RetrievalService = new Bm25RetrievalServiceImpl();
@@ -44,7 +50,7 @@ public class RetrievalController {
 			QueryResultModel queryResult = bm25RetrievalService.getQueryResults(query, 100);
 			bm25QueryResultList.add(queryResult);
 		}
-		RetrievalHelper.printIndex(bm25QueryResultList, indexDir, "bm25_NoStem");
+		RetrievalHelper.printIndex(bm25QueryResultList, resultDir, "BM25");
 
 		TermWeightIdfServiceImpl idfService = new TermWeightIdfServiceImpl();
 		List<QueryResultModel> tfIdfQueryResultList = new ArrayList<>();
@@ -52,7 +58,7 @@ public class RetrievalController {
 			QueryResultModel tfIdf = idfService.getQueryResults(query, 100);
 			tfIdfQueryResultList.add(tfIdf);
 		}
-		RetrievalHelper.printIndex(tfIdfQueryResultList, indexDir, "tfIdf_NoStem");
+		RetrievalHelper.printIndex(tfIdfQueryResultList, resultDir, "tfIdf");
 
 		List<QueryResultModel> qlrmQueryList = new ArrayList<>();
 		QLRMServiceImpl qlrsr = new QLRMServiceImpl();
@@ -60,22 +66,22 @@ public class RetrievalController {
 			QueryResultModel queryResult = qlrsr.getQueryResults(query, 100);
 			qlrmQueryList.add(queryResult);
 		}
-		RetrievalHelper.printIndex(qlrmQueryList, indexDir, "QLR_NoStem");
+		RetrievalHelper.printIndex(qlrmQueryList, resultDir, "QLRM");
 
 		List<QueryResultModel> psuedoExpandedList = new ArrayList<>();
 		PsuedoExpansionService psuedoRel = new PsuedoExpansionService();
 		for (QueryModel query : queryList) {
-			QueryResultModel pusedoQuery = psuedoRel.performQueryExpandsion(query, "TF", 100);
+			QueryResultModel pusedoQuery = psuedoRel.performQueryExpandsion(query, "BM25", 100);
 			psuedoExpandedList.add(pusedoQuery);
 		}
-		RetrievalHelper.printIndex(psuedoExpandedList, indexDir, "PSUEDO_TFIdf_NoStem");
+		RetrievalHelper.printIndex(psuedoExpandedList, resultDir, "PSUEDO_BM25");
 
 		Evaluate evl = new Evaluate();
-		SystemEvaluationModel tfEval = evl.performEvaluation(tfIdfQueryResultList, "tfIdf_NoStem");
-		SystemEvaluationModel qlrmEval = evl.performEvaluation(qlrmQueryList, "QLR_NoStem");
-		SystemEvaluationModel bm25Eval = evl.performEvaluation(bm25QueryResultList, "bm25_NoStem");
-		SystemEvaluationModel luceneEval = evl.performEvaluation(luceneQueryResultList, "lucene_NoStem");
-		SystemEvaluationModel pusedoEval = evl.performEvaluation(psuedoExpandedList, "PSUEDO_TFIdf_NoStem");
+		SystemEvaluationModel tfEval = evl.performEvaluation(tfIdfQueryResultList, "tfIdf");
+		SystemEvaluationModel qlrmEval = evl.performEvaluation(qlrmQueryList, "QLRM");
+		SystemEvaluationModel bm25Eval = evl.performEvaluation(bm25QueryResultList, "BM25");
+		SystemEvaluationModel luceneEval = evl.performEvaluation(luceneQueryResultList, "lucene");
+		SystemEvaluationModel pusedoEval = evl.performEvaluation(psuedoExpandedList, "PSUEDO_TFIdf");
 
 		RetrievalHelper.printEvaluatedFile(tfEval, indexDir);
 		RetrievalHelper.printEvaluatedFile(qlrmEval, indexDir);

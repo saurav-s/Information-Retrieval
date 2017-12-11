@@ -66,10 +66,6 @@ public class RetrievalHelper extends DocumentHelper {
 
 	public static void initHelper() {
 		try {
-			// if (docIdMap.size() == 0) {
-			// initMap(fileLocation);
-			// }
-			// readUnaryIndex(indexFileLocation);
 			if (docTermFreqMap.size() == 0) {
 				docTermFreqMap = getDocTermMap(unaryIndexMap);
 			}
@@ -78,20 +74,6 @@ public class RetrievalHelper extends DocumentHelper {
 			e.printStackTrace();
 		}
 	}
-
-	// private static <T> void PrintToFile(List<T> table, String fileLocation,
-	// String fileName) {
-	// try {
-	// // LOGGER.info("Printing table" + fileName + "\tTotal number of
-	// // unique words = "
-	// // + table.size());
-	// writeToJsonStream(fileLocation, fileName, table);
-	// } catch (Exception e) {
-	// LOGGER.severe("Error writing file" + e.getMessage());
-	// throw e;
-	// }
-	//
-	// }
 
 	public static <T> void writeToJsonStream(String fileLoction, String fileName, List<T> tfTable) {
 		try {
@@ -156,53 +138,6 @@ public class RetrievalHelper extends DocumentHelper {
 			throw e;
 		}
 	}
-
-	// public static void initMap(String fileLocation) {
-	// if (docIdMap.size() == 0) {
-	// }
-	// }
-	//
-	// private void createMap(String fileLocation) {
-	// Path path = Paths.get(fileLocation);
-	// int count = 1;
-	// try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
-	// for (Path entry : stream) {
-	// // if (entry.toFile().isFile()) {
-	// if (entry.toFile().isFile() &&
-	// (getFileExtension(entry.toFile()).equals("txt"))) {
-	// try (Stream<String> fileStream = Files.lines(entry)) {
-	// // Integer docId =
-	// // getDocId(entry.getFileName().toString());
-	// Iterator<String> iterator = fileStream.iterator();
-	// while (iterator.hasNext()) {
-	// String nextLine = iterator.next();
-	// String[] split = nextLine.split("\\s+");
-	// docLengthMap.put(count, split.length);
-	// }
-	// }
-	// docIdMap.put(count++, entry.getFileName().toString());
-	//
-	// }
-	// }
-	// } catch (Exception e) {
-	// LOGGER.severe("Error in initializing doc id map");
-	// }
-	// LOGGER.info("Init done...!!!! Total Documents read = " +
-	// docIdMap.size());
-	// PrintToFile(getDocMapperList(), getParentfileLocation(fileLocation),
-	// "docId_Map.json");
-	// }
-
-	// private static List<DocumentIdMapperModel> getDocMapperList() {
-	// List<DocumentIdMapperModel> docIdMapper = new ArrayList<>();
-	// for (Map.Entry<Integer, String> entry : docIdMap.entrySet()) {
-	// DocumentIdMapperModel model = new DocumentIdMapperModel();
-	// model.setDocId(entry.getKey());
-	// model.setDocName(entry.getValue());
-	// docIdMapper.add(model);
-	// }
-	// return docIdMapper;
-	// }
 
 	public static Integer getDocId(String docName) {
 		Integer docId = null;
@@ -353,36 +288,35 @@ public class RetrievalHelper extends DocumentHelper {
 
 	}
 
-	
-	public static void printEvaluatedFile(SystemEvaluationModel systemEvl, String fileLocation )
-	{
+	public static void printEvaluatedFile(SystemEvaluationModel systemEvl, String fileLocation) {
 		StringBuilder sb = new StringBuilder();
-		double p5=0.0;
-		double p20=0.0;
+		double p5 = 0.0;
+		double p20 = 0.0;
 		for (EvaluationResultModel evlResult : systemEvl.getEvaluatedResults()) {
 			int rank = 1;
-			for(DocumentEvaluationModel docEval  :evlResult.getResults())
-			{
-				sb.append(evlResult.getQueryId()+ " Q0 ");
-				sb.append(docEval.getDocId()+" "+rank);
-				if(docEval.isRelevant())sb.append(" R ");
-				else sb.append(" N ");
-				sb.append(" Percision: "+docEval.getPrecision());
-				sb.append(" Recal: "+docEval.getRecall()+" ");
+			for (DocumentEvaluationModel docEval : evlResult.getResults()) {
+				sb.append(evlResult.getQueryId() + " Q0 ");
+				sb.append(docEval.getDocId() + " " + rank);
+				if (docEval.isRelevant())
+					sb.append(" R ");
+				else
+					sb.append(" N ");
+				sb.append(" Percision: " + docEval.getPrecision());
+				sb.append(" Recal: " + docEval.getRecall() + " ");
 				sb.append(systemEvl.getModelName() + "\n");
 				rank++;
-				if(rank == 5) p5=docEval.getPrecision();
-				if(rank == 20) p20=docEval.getPrecision();
+				if (rank == 5)
+					p5 = docEval.getPrecision();
+				if (rank == 20)
+					p20 = docEval.getPrecision();
 			}
 		}
-			sb.append("MAP: "+ systemEvl.getMap()+ "\n");
-			sb.append("MRR: "+ systemEvl.getMrr()+ "\n");
-			sb.append("P@5: "+ p5+ "\n");
-			sb.append("P@20: "+ p20+ "\n");
-			writeToFile(sb.toString(), "Eval_"+systemEvl.getModelName(), fileLocation);
+		sb.append("MAP: " + systemEvl.getMap() + "\n");
+		sb.append("MRR: " + systemEvl.getMrr() + "\n");
+		sb.append("P@5: " + p5 + "\n");
+		sb.append("P@20: " + p20 + "\n");
+		writeToFile(sb.toString(), "Eval_" + systemEvl.getModelName(), fileLocation);
 	}
-
-
 
 	public static void writeToFile(String doc, String filename, String fileLocation) {
 		BufferedWriter writer = null;
@@ -564,10 +498,11 @@ public class RetrievalHelper extends DocumentHelper {
 			Elements docs = Jsoup.parse(sb.toString()).select("DOC");
 			for (Element element : docs) {
 				int queryId = Integer.parseInt(element.select("DOCNO").text());
-				String query = element.ownText();
+				String query = element.ownText().toLowerCase().trim();
+				String parsedQuery = DocumentHelper.parsePunctuation(DocumentHelper.parseText(query));
 				QueryModel queryModel = new QueryModel();
 				queryModel.setId(queryId);
-				queryModel.setQuery(query);
+				queryModel.setQuery(parsedQuery);
 				queryList.add(queryModel);
 			}
 		} catch (IOException io) {

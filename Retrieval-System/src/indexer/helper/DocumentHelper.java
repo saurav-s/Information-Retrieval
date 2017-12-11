@@ -172,8 +172,16 @@ public class DocumentHelper {
 		return whiteSpaceCleanedDocument;
 
 	}
+	public static String parseText(String text){
+		Matcher documentMatcher = SPACE_PATTERN.matcher(text);
+		String whiteSpaceCleanedDocument = documentMatcher.replaceAll(" ");
+		if (parseRelevantTextOnly) {
+			whiteSpaceCleanedDocument = getRelevantText(whiteSpaceCleanedDocument);
+		}
+		return whiteSpaceCleanedDocument;
+	}
 
-	private static String parsePunctuation(String whiteSpaceCleanedDocument) {
+	public static String parsePunctuation(String whiteSpaceCleanedDocument) {
 		StringBuilder str = new StringBuilder();
 		StringTokenizer tokenizer = new StringTokenizer(whiteSpaceCleanedDocument, " ");
 		// Pattern supTagText = Pattern.compile("\\((\\d*?)\\)|\\[(\\d*?)\\]");
