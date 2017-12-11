@@ -130,8 +130,8 @@ public class RetrievalController {
 			RetrievalHelper.printIndex(psuedoExpandedList, resultDir, "PSUEDO_BM25");
 
 			RetrievalHelper.printIndex(tfIdfQueryResultList, resultDir, "tfIdf");
-			RetrievalHelper.printIndex(ptfIdfQueryResultList, indexDir, "prox");
-			RetrievalHelper.printIndex(ptfIdfQueryResultListWithStop, indexDir, "prox_stop");
+			RetrievalHelper.printIndex(ptfIdfQueryResultList, resultDir, "prox");
+			RetrievalHelper.printIndex(ptfIdfQueryResultListWithStop, resultDir, "prox_stop");
 			RetrievalHelper.printIndex(bm25QueryResultList, resultDir, "BM25");
 
 			SystemEvaluationModel tfEval = evl.performEvaluation(tfIdfQueryResultList, "tfIdf");
