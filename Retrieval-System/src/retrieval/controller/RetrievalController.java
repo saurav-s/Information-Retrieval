@@ -8,6 +8,7 @@ import indexer.helper.DocumentHelper;
 import retrieval.helper.RetrievalHelper;
 import retrieval.service.Bm25RetrievalServiceImpl;
 import retrieval.service.LuceneRetrievalServiceImpl;
+import retrieval.service.ProximityTfIdfServiceImpl;
 import retrieval.service.PsuedoExpansionService;
 import retrieval.service.QLRMServiceImpl;
 import retrieval.service.TermWeightIdfServiceImpl;
@@ -72,6 +73,22 @@ public class RetrievalController {
 			QueryResultModel tfIdf = idfService.getQueryResults(query, 100);
 			tfIdfQueryResultList.add(tfIdf);
 		}
+		
+		ProximityTfIdfServiceImpl proxTfIdfService = new ProximityTfIdfServiceImpl();
+		List<QueryResultModel> ptfIdfQueryResultList = new ArrayList<>();
+		for (QueryModel query : queryList) {
+			QueryResultModel ptfIdf = proxTfIdfService.getQueryResults(query, 100);
+			ptfIdfQueryResultList.add(ptfIdf);
+		}
+
+		
+		proxTfIdfService.init(true);
+		List<QueryResultModel> ptfIdfQueryResultListWithStop = new ArrayList<>();
+		for (QueryModel query : queryList) {
+			QueryResultModel ptfIdf = proxTfIdfService.getQueryResults(query, 100);
+			ptfIdfQueryResultListWithStop.add(ptfIdf);
+		}
+
 
 		List<QueryResultModel> qlrmQueryList = new ArrayList<>();
 		QLRMServiceImpl qlrsr = new QLRMServiceImpl();
@@ -113,6 +130,8 @@ public class RetrievalController {
 			RetrievalHelper.printIndex(psuedoExpandedList, resultDir, "PSUEDO_BM25");
 
 			RetrievalHelper.printIndex(tfIdfQueryResultList, resultDir, "tfIdf");
+			RetrievalHelper.printIndex(ptfIdfQueryResultList, indexDir, "prox");
+			RetrievalHelper.printIndex(ptfIdfQueryResultListWithStop, indexDir, "prox_stop");
 			RetrievalHelper.printIndex(bm25QueryResultList, resultDir, "BM25");
 
 			SystemEvaluationModel tfEval = evl.performEvaluation(tfIdfQueryResultList, "tfIdf");
@@ -120,7 +139,13 @@ public class RetrievalController {
 			SystemEvaluationModel bm25Eval = evl.performEvaluation(bm25QueryResultList, "BM25");
 			SystemEvaluationModel luceneEval = evl.performEvaluation(luceneQueryResultList, "lucene");
 			SystemEvaluationModel pusedoEval = evl.performEvaluation(psuedoExpandedList, "PSUEDO_TFIdf");
+			SystemEvaluationModel proxEval = evl.performEvaluation(ptfIdfQueryResultList, "prox");
+			SystemEvaluationModel proxEvalStop = evl.performEvaluation(ptfIdfQueryResultListWithStop, "prox_stop");
 
+
+
+			RetrievalHelper.printEvaluatedFile(proxEval, indexDir);
+			RetrievalHelper.printEvaluatedFile(proxEvalStop, indexDir);
 			RetrievalHelper.printEvaluatedFile(tfEval, indexDir);
 			RetrievalHelper.printEvaluatedFile(qlrmEval, indexDir);
 			RetrievalHelper.printEvaluatedFile(bm25Eval, indexDir);

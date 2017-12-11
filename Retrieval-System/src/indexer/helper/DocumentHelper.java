@@ -235,6 +235,8 @@ public class DocumentHelper {
 					printDocTokenInfo, stopping);
 		}
 	}
+	
+	
 
 	private void updateDocTokenInfo(int docId, int unaryTokenCount, int binaryTokenCount, int ternaryTokenCount) {
 		DocTokenModel docToken = new DocTokenModel();
@@ -493,14 +495,15 @@ public class DocumentHelper {
 				if (!token.isEmpty()) {
 					// LOGGER.info("token = "+token);
 					if (ngramSize == 1) {
-						addTokenToIndex(token, indexMap, docId);
 						tokenCount++;
+						addTokenToIndex(token, indexMap, docId,tokenCount);
+						
 					} else if ((ngramSize == 2) && (lastToken != null)) {
-						addTokenToIndex(lastToken + " " + token, indexMap, docId);
 						tokenCount++;
+						addTokenToIndex(lastToken + " " + token, indexMap, docId,tokenCount);
 					} else if ((ngramSize == 3) && (secondLastToken != null)) {
-						addTokenToIndex(secondLastToken + " " + lastToken + " " + token, indexMap, docId);
 						tokenCount++;
+						addTokenToIndex(secondLastToken + " " + lastToken + " " + token, indexMap, docId,tokenCount);
 					} else if (ngramSize != 1 && ngramSize != 2 && ngramSize != 3) {
 						throw new UnsupportedOperationException(
 								"The ngram size '" + ngramSize + "' is not supported currently");
@@ -517,7 +520,7 @@ public class DocumentHelper {
 		}
 	}
 
-	private static void addTokenToIndex(String token, Map<String, List<IndexModel>> indexMap, final int docId) {
+	private static void addTokenToIndex(String token, Map<String, List<IndexModel>> indexMap, final int docId, int position) {
 
 		IndexModel dummyModel = new IndexModel();
 		if (indexMap.containsKey(token)) {
@@ -530,8 +533,7 @@ public class DocumentHelper {
 				while (docItr.hasNext()) {
 					IndexModel indexModel = docItr.next();
 					if (indexModel.getDocId() == docId) {
-						int tf = indexModel.getTf();
-						indexModel.setTf(++tf);
+						indexModel.getTermPositions().add(position);
 						break;
 					}
 				}
@@ -540,18 +542,24 @@ public class DocumentHelper {
 				// list");
 				IndexModel indexModel = new IndexModel();
 				indexModel.setDocId(docId);
-				indexModel.setTf(1);
+				List<Integer> postionList =new ArrayList<>();
+				postionList.add(position);
+				indexModel.setTermPositions(postionList);
 				docIdList.add(indexModel);
 			}
 		} else {
 			IndexModel indexModel = new IndexModel();
 			indexModel.setDocId(docId);
-			indexModel.setTf(1);
+			List<Integer> postionList =new ArrayList<>();
+			postionList.add(position);
+			indexModel.setTermPositions(postionList);
 			List<IndexModel> docIdList = new ArrayList<>();
 			docIdList.add(indexModel);
 			indexMap.put(token, docIdList);
 		}
 	}
+
+
 
 	private static String parseCaseFolding(String documentText) {
 		return documentText.toLowerCase();

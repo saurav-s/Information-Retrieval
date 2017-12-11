@@ -537,4 +537,44 @@ public class RetrievalHelper extends DocumentHelper {
 		}
 		return topResults;
 	}
+	
+	/**
+	 * 
+	 * @param query
+	 * @return
+	 */
+	public static Map<Integer,List<String>> getSetOfPairs(QueryModel query) {
+		Map<Integer,List<String>> pairMap = new HashMap<>();
+		String[] queryTerms = query.getQuery().split("\\s");
+		String previousTerm="";
+		int count= 1;
+		for(String term: queryTerms) {
+			List<String> pairList =new ArrayList<>();
+			if(!previousTerm.equals("")) {
+				pairList.add(previousTerm);
+				pairList.add(term);
+				pairMap.put(count, pairList);
+				count++;
+			}
+			previousTerm = term;
+		}
+		return pairMap;
+		
+	}
+
+	public static String[] removeStopWordsFromQuery(String[] terms) {
+		Set<String> commonWords = RetrievalHelper.parseFileContentToString();
+		List<String> termList =new ArrayList<>();
+
+		for(String term : terms) {
+			if (commonWords.contains(term))
+				continue;
+			else
+				termList.add(term);
+		}
+		
+		return Arrays.copyOf(termList.toArray(), termList.toArray().length, String[].class);
+	}
+
+
 }
