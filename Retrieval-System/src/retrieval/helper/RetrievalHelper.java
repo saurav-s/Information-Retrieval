@@ -58,6 +58,7 @@ public class RetrievalHelper extends DocumentHelper {
 	// HashMap<>();
 	private static String COMMON_WORDS = ".\\common_words.txt";
 	private static String CACM_RAW_QUERIES = ".\\cacm_raw_queries.txt";
+	private static String CACM_STEM_QUERIES = ".\\cacm_stem.queries.txt";
 	private static double IDF_DEFAULT = 1.5;
 
 	private RetrievalHelper() {
@@ -113,7 +114,8 @@ public class RetrievalHelper extends DocumentHelper {
 		}
 	}
 
-	public static List<QueryModel> getQueryList(String fileName) throws FileNotFoundException, IOException {
+	public static List<QueryModel> getStemmedQueryList() throws FileNotFoundException, IOException {
+		String fileName = RetrievalHelper.CACM_STEM_QUERIES;
 		try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
 			List<QueryModel> queryList = new ArrayList<>();
 			System.out.println("Reading file: " + fileName);
@@ -129,9 +131,17 @@ public class RetrievalHelper extends DocumentHelper {
 					sb.append(st.nextToken() + " ");
 				}
 				System.out.println("query obtained is " + sb.toString().trim());
-				query.setQuery(sb.toString().trim());
+				String parsedQuery = DocumentHelper.parsePunctuation(DocumentHelper.parseText(sb.toString().trim()));
+				query.setQuery(parsedQuery);
+				String[] queryArray = parseQuery(query);
+				sb.delete(0, sb.length());
+				for (String word : queryArray) {
+					sb.append(word+" ");
+				}
+				query.setQuery(sb.toString());
 				queryList.add(query);
 			}
+
 			return queryList;
 		} catch (Exception e) {
 			e.printStackTrace();

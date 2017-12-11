@@ -43,11 +43,14 @@ public class TermWeightIdfServiceImpl implements RetrievalService {
 		return tfIdfProduct;
 	}
 
-	private List<IndexModel> fetchRelevantDocsForQuery(String[] queryWords) {
+	protected List<IndexModel> fetchRelevantDocsForQuery(String[] queryWords) {
 		List<IndexModel> docList = new ArrayList<>();
 		for (String word : queryWords) {
 			List<IndexModel> docsForWord = RetrievalHelper.getInvertedIndex(word);
-			docList.addAll(docsForWord);
+			for(IndexModel model: docsForWord) {
+				if(!docList.contains(model))
+					docList.add(model);
+			}
 		}
 		return docList;
 	}

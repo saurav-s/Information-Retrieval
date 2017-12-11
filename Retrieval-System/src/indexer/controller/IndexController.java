@@ -55,6 +55,7 @@ public class IndexController {
 				break;
 			case "stem":
 				System.out.println("Reading Stemmed documents...");
+				corpusLocation = corpusLocation+"stemmedCorpus\\";
 				helper.createStemmedCorpus(documentLocation, corpusLocation);
 				helper.indexFiles(corpusLocation, printInvertedIndex, printTf, printDf, printTokenInfo, parseStopping);
 				break;
