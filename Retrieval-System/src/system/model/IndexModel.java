@@ -1,17 +1,17 @@
 package system.model;
 
+import java.util.List;
+
 public class IndexModel {
 
 	int docId;
-	int tf;
+	List<Integer> termPositions;
 
 
 	public int getTf() {
-		return tf;
+		return termPositions.size();
 	}
-	public void setTf(int tf) {
-		this.tf = tf;
-	}
+
 	public int getDocId() {
 		return docId;
 	}
@@ -38,10 +38,21 @@ public class IndexModel {
 			return false;
 		return true;
 	}
+
 	@Override
 	public String toString() {
-		return "[docId=" + docId + ", tf=" + tf + "]";
+		return "IndexModel [docId=" + docId + ", termPositions=" + termPositions + "]";
 	}
+
+	public List<Integer> getTermPositions() {
+		return termPositions;
+	}
+
+	public void setTermPositions(List<Integer> termPositions) {
+		this.termPositions = termPositions;
+	}
+
+
 
 
 }
