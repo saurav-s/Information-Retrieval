@@ -14,9 +14,9 @@ import system.model.QueryModel;
 import system.model.QueryResultModel;
 
 public interface RetrievalService {
-	
-	// GIVEN: a query that has an id assosciated with it, the query itself 
-	//        and the needed number of top documents
-	// RETURNS: a QueryResultModel that has atleast K top documents. 
+
+	// GIVEN: a query that has an id assosciated with it, the query itself
+	// and the needed number of top documents
+	// RETURNS: a QueryResultModel that has atleast K top documents.
 	QueryResultModel getQueryResults(QueryModel query, int size);
 }

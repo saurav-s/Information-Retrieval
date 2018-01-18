@@ -3,6 +3,7 @@ package retrieval.service;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -21,7 +22,9 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopScoreDocCollector;
+import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
 import org.apache.lucene.store.FSDirectory;
 
 import retrieval.helper.RetrievalHelper;
@@ -30,12 +33,12 @@ import system.model.QueryModel;
 import system.model.QueryResultModel;
 
 public class LuceneRetrievalServiceImpl {
-	// private static Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_47);
+	// private static Analyzer analyzer = new
+	// StandardAnalyzer(Version.LUCENE_47);
 	private static Analyzer sAnalyzer = new SimpleAnalyzer();
 
 	private IndexWriter writer;
 	private ArrayList<File> queue = new ArrayList<File>();
-	private RetrievalHelper helper;
 
 	/**
 	 * Constructor
@@ -45,28 +48,29 @@ public class LuceneRetrievalServiceImpl {
 	 * @throws java.io.IOException
 	 *             when exception creating index.
 	 */
-	private LuceneRetrievalServiceImpl(String indexDir,String corpusDir, String indexFileLocation ) throws IOException {
-		
+	private LuceneRetrievalServiceImpl(String indexDir, String corpusDir, String indexFileLocation) throws IOException {
+
 		FSDirectory dir = FSDirectory.open(Paths.get(indexDir));
 
 		IndexWriterConfig config = new IndexWriterConfig(sAnalyzer);
 
 		writer = new IndexWriter(dir, config);
-		
-		helper = new RetrievalHelper(corpusDir,indexFileLocation); 
-		
+
+		RetrievalHelper.initHelper();
+
 	}
-	
-	public static LuceneRetrievalServiceImpl getRetrievalService(String indexDir,String corpusDir, String indexFileLocation) throws IOException {
-		return new LuceneRetrievalServiceImpl(indexDir,corpusDir, indexFileLocation);
+
+	public static LuceneRetrievalServiceImpl getRetrievalService(String indexDir, String corpusDir,
+			String indexFileLocation) throws IOException {
+		return new LuceneRetrievalServiceImpl(indexDir, corpusDir, indexFileLocation);
 	}
-	
 
 	/**
 	 * Indexes a file or directory
 	 * 
 	 * @param fileName
-	 *            the name of a text file or a folder we wish to add to the index
+	 *            the name of a text file or a folder we wish to add to the
+	 *            index
 	 * @throws java.io.IOException
 	 *             when exception
 	 */
@@ -88,12 +92,12 @@ public class LuceneRetrievalServiceImpl {
 				// add contents of file
 				// ===================================================
 				fr = new FileReader(f);
-				doc.add(new TextField("contents", fr));
+				doc.add(new TextField("contents", new String(Files.readAllBytes(f.toPath())), Field.Store.YES));
 				doc.add(new StringField("path", f.getPath(), Field.Store.YES));
 				doc.add(new StringField("filename", f.getName(), Field.Store.YES));
 
 				writer.addDocument(doc);
-				System.out.println("Added: " + f);
+				// System.out.println("Added: " + f);
 			} catch (Exception e) {
 				System.out.println("Could not add: " + f);
 			} finally {
@@ -144,36 +148,39 @@ public class LuceneRetrievalServiceImpl {
 			writer.close();
 	}
 
-	public ScoreDoc[] getDocumentScores(QueryModel query, int resultsSize, IndexSearcher searcher)
+	public TopDocs getDocumentScores(org.apache.lucene.search.Query q, int resultsSize, IndexSearcher searcher)
 			throws ParseException, IOException, org.apache.lucene.queryparser.classic.ParseException {
 		TopScoreDocCollector collector = TopScoreDocCollector.create(resultsSize);
-		org.apache.lucene.search.Query q = new QueryParser("contents", sAnalyzer)
-				.parse(query.getQuery());
 		searcher.search(q, collector);
-		ScoreDoc[] hits = collector.topDocs().scoreDocs;
-		return hits;
+		TopDocs topDocs = collector.topDocs();
+		return topDocs;
 	}
 
 	public QueryResultModel search(QueryModel query, String indexLocation, int resultSize)
 			throws IOException, ParseException, org.apache.lucene.queryparser.classic.ParseException {
 		IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexLocation)));
 		IndexSearcher searcher = new IndexSearcher(reader);
-		ScoreDoc[] hits = getDocumentScores(query, resultSize, searcher);
-		QueryResultModel queryResults = createQueryResultsfromScoredDocs(hits, searcher, query);
+		org.apache.lucene.search.Query q = new QueryParser("contents", sAnalyzer).parse(query.getQuery());
+		TopDocs hits = getDocumentScores(q, resultSize, searcher);
+		QueryResultModel queryResults = createQueryResultsfromScoredDocs(hits, searcher, query, q);
 		return queryResults;
 	}
 
-	public QueryResultModel createQueryResultsfromScoredDocs(ScoreDoc[] hits, IndexSearcher searcher,
-			QueryModel query) throws IOException {
+	public QueryResultModel createQueryResultsfromScoredDocs(TopDocs hits, IndexSearcher searcher, QueryModel query,
+			org.apache.lucene.search.Query q) throws IOException {
 		QueryResultModel resultModel = new QueryResultModel();
 		List<DocumentRankModel> results = new ArrayList<>();
-		System.out.println("Found " + hits.length + " hits.");
-		for (ScoreDoc scoredDoc : hits) {
+		System.out.println("Found " + hits.scoreDocs.length + " hits.");
+		UnifiedHighlighter highlighter = new UnifiedHighlighter(searcher, sAnalyzer);
+		String[] fragments = highlighter.highlight("contents", q, hits, 100);
+		int i = 0;
+		for (ScoreDoc scoredDoc : hits.scoreDocs) {
 			int docId = scoredDoc.doc;
 			Document d = searcher.doc(docId);
 			DocumentRankModel result = new DocumentRankModel();
-			result.setDocId(helper.getDocId(d.get("filename")));
+			result.setDocId(RetrievalHelper.getDocId(d.get("filename")));
 			result.setRankScore(scoredDoc.score);
+			result.setSnippet(fragments[i++]);
 			results.add(result);
 		}
 		resultModel.setQueryId(query.getId());
@@ -193,9 +200,7 @@ public class LuceneRetrievalServiceImpl {
 		} catch (Exception ex) {
 			System.out.println("Cannot create index..." + ex.getMessage());
 			System.exit(-1);
-		} 
+		}
 	}
-	
-	
 
 }
